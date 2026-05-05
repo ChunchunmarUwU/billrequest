@@ -123,7 +123,7 @@ export default function Login() {
             transition={{ delay: 0.2 }}
             className="text-3xl font-black bg-gradient-to-r from-indigo-500 to-pink-500 bg-clip-text text-transparent"
           >
-            Welcome Honey
+            Gunj
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0 }}
