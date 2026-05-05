@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getRole() {
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return userDoc != null ? userDoc.data.role : null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getRole() == 'Admin';
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId && 
+                    (request.resource.data.role == 'User' || (request.resource.data.role == 'Admin' && request.auth.token.email == 'admin@app.local'));
+      allow update: if false;
+    }
+
+    match /requests/{requestId} {
+      allow read: if isSignedIn() && (resource.data.user_id == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn() &&
+                    request.resource.data.keys().hasAll(["user_id", "user_name", "amount", "currency", "category", "urgency", "importance", "reason", "status", "created_at", "updated_at"]) &&
+                    request.resource.data.user_id == request.auth.uid &&
+                    request.resource.data.status == 'Pending';
+
+      allow update: if isSignedIn() && (
+        (
+          isAdmin() && 
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'admin_comment', 'decision_date', 'updated_at']) &&
+          request.resource.data.status in ['Approved', 'Rejected'] &&
+          resource.data.status == 'Pending'
+        )
+      );
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && resource.data.user_id == request.auth.uid;
+      
+      allow create: if isSignedIn() && isAdmin();
+
+      allow update: if isSignedIn() && 
+                    resource.data.user_id == request.auth.uid &&
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['is_read']);
+    }
+  }
+}

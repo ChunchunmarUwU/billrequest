@@ -1,0 +1,65 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "User"] }
+      },
+      "required": ["email", "username", "role"]
+    },
+    "MoneyRequest": {
+      "title": "MoneyRequest",
+      "description": "A money request submitted by a user",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "user_name": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "category": { "type": "string" },
+        "urgency": { "type": "string", "enum": ["Low", "Medium", "High", "Emergency"] },
+        "importance": { "type": "string", "enum": ["Low", "Medium", "High", "Very Important"] },
+        "reason": { "type": "string" },
+        "details": { "type": "string" },
+        "needed_by_date": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
+        "admin_comment": { "type": "string" },
+        "decision_date": { "type": "number" },
+        "created_at": { "type": "number" },
+        "updated_at": { "type": "number" }
+      },
+      "required": ["user_id", "user_name", "amount", "currency", "category", "urgency", "importance", "reason", "status", "created_at", "updated_at"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "A notification for a user",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "request_id": { "type": "string" },
+        "message": { "type": "string" },
+        "is_read": { "type": "boolean" },
+        "created_at": { "type": "number" }
+      },
+      "required": ["user_id", "request_id", "message", "is_read", "created_at"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user roles and base info"
+    },
+    "/requests/{requestId}": {
+      "schema": { "$ref": "#/entities/MoneyRequest" },
+      "description": "Stores money requests"
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "Stores user notifications"
+    }
+  }
+}
