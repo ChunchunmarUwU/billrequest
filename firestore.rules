@@ -30,6 +30,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /cnt/{contactId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
     match /requests/{requestId} {
       allow read: if isSignedIn() && (resource.data.user_id == request.auth.uid || isAdmin());
 

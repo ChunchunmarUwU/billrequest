@@ -42,7 +42,7 @@ export default function NewRequest() {
         const contactDoc = await getDoc(doc(db, 'cnt', 'admin'));
         if (contactDoc.exists()) {
           const data = contactDoc.data();
-          if (data.Name) setAdminContactName(data.Name);
+          if (data.name) setAdminContactName(data.name);
           if (data.num) setAdminContactPhone(data.num);
         }
       } catch (err) {
