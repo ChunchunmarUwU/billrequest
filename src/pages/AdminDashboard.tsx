@@ -16,6 +16,14 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState('Pending');
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, searchQuery]);
+  
   // Processing logic
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [adminComment, setAdminComment] = useState<{ [key: string]: string }>({});
@@ -112,7 +120,7 @@ export default function AdminDashboard() {
         `"${req.id}"`,
         `"${req.user_name}"`,
         req.amount,
-        `"${req.currency}"`,
+        `"MNT"`,
         `"${req.category}"`,
         `"${req.urgency}"`,
         `"${req.importance}"`,
@@ -144,6 +152,9 @@ export default function AdminDashboard() {
     return true;
   });
 
+  const paginatedRequests = filteredRequests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / itemsPerPage));
+
   const getStatusInfo = (status: string) => {
     switch (status) {
       case 'Approved': return { bg: 'bg-emerald-50/30', border: 'border-emerald-200', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-800', icon: CheckCircle2 };
@@ -167,7 +178,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Header & Filters */}
-      <div className="bg-white rounded-[2rem] shadow-sm border border-gray-200 p-6 sm:p-8 flex flex-col xl:flex-row gap-6 justify-between items-center z-10 sticky top-16 xl:top-6">
+      <div className="bg-white rounded-[2rem] shadow-sm border border-gray-200 p-6 sm:p-8 flex flex-col xl:flex-row gap-6 justify-between items-center z-10 mb-8">
         <div className="self-start xl:self-auto flex items-center gap-4">
           <div className="h-12 w-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
             <Briefcase className="h-6 w-6" />
@@ -227,11 +238,23 @@ export default function AdminDashboard() {
             <FileText className="h-10 w-10 text-gray-300" />
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">No requests found</h3>
-          <p className="text-gray-500 font-medium">Try adjusting your search or filters.</p>
+          <p className="text-gray-500 font-medium mb-6">Try adjusting your search or filters.</p>
+          {(statusFilter !== 'All' || searchQuery !== '') && (
+            <button
+              onClick={() => {
+                setStatusFilter('All');
+                setSearchQuery('');
+              }}
+              className="px-6 py-2.5 rounded-full bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 transition-colors"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       ) : (
+        <>
         <div className="grid gap-6">
-          {filteredRequests.map((req) => {
+          {paginatedRequests.map((req) => {
             const statusInfo = getStatusInfo(req.status);
             const StatusIcon = statusInfo.icon;
             
@@ -252,7 +275,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="text-right md:text-left mt-1 md:mt-0 bg-gray-50 rounded-2xl p-4 border border-gray-100 w-full">
                       <p className="text-xs text-gray-500 font-black uppercase tracking-widest mb-1.5">Amount</p>
-                      <div className="text-3xl font-black text-gray-900 tracking-tight">${req.amount.toLocaleString()} <span className="text-sm font-bold text-gray-400">{req.currency}</span></div>
+                      <div className="text-3xl font-black text-gray-900 tracking-tight">{req.amount.toLocaleString()} <span className="text-sm font-bold text-gray-400">₮</span></div>
                     </div>
                   </div>
 
@@ -271,6 +294,16 @@ export default function AdminDashboard() {
                         )}>
                           Urgency: {req.urgency}
                         </span>
+                        {req.adminFinancialStateAtSubmission && (
+                          <span className={cn(
+                            "inline-flex items-center rounded-lg px-3 py-1 text-xs font-bold uppercase tracking-wider",
+                            req.adminFinancialStateAtSubmission === 'GOOD' ? 'bg-green-100 text-green-700' :
+                            req.adminFinancialStateAtSubmission === 'Okay' ? 'bg-orange-100 text-orange-700' :
+                            'bg-red-100 text-red-700'
+                          )}>
+                            Fin State: {req.adminFinancialStateAtSubmission}
+                          </span>
+                        )}
                         {req.needed_by_date && (
                            <span className="inline-flex items-center rounded-lg bg-gray-100 px-3 py-1 text-xs font-bold text-gray-600 uppercase tracking-wider">
                             Needed: {format(new Date(req.needed_by_date), 'MMM d')}
@@ -346,6 +379,29 @@ export default function AdminDashboard() {
             );
           })}
         </div>
+
+        {totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-between bg-white px-6 py-4 rounded-2xl shadow-sm border border-gray-100">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 text-sm font-bold rounded-xl text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Previous
+            </button>
+            <span className="text-sm font-medium text-gray-500">
+              Page <span className="font-bold text-gray-900">{currentPage}</span> of <span className="font-bold text-gray-900">{totalPages}</span>
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 text-sm font-bold rounded-xl text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        )}
+        </>
       )}
 
       {confirmDialog.isOpen && (

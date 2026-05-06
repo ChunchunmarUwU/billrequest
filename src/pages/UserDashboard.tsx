@@ -168,7 +168,7 @@ export default function UserDashboard() {
                             {req.category}
                           </p>
                           <p className="text-2xl font-black text-gray-900 tracking-tight">
-                            {req.amount.toLocaleString()} <span className="text-sm font-bold text-gray-400">{req.currency}</span>
+                            {req.amount.toLocaleString()} <span className="text-sm font-bold text-gray-400">₮</span>
                           </p>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

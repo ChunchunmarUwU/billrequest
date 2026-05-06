@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { motion } from 'motion/react';
-import { Heart, Send, Coins } from 'lucide-react';
+import { collection, addDoc, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { motion, AnimatePresence } from 'motion/react';
+import { Heart, Send, Coins, Copy, Check } from 'lucide-react';
 
 export default function NewRequest() {
   const { user } = useAuth();
@@ -15,7 +15,7 @@ export default function NewRequest() {
   
   const [formData, setFormData] = useState({
     amount: '',
-    currency: 'USD',
+    currency: 'MNT',
     category: 'Food',
     urgency: 'Medium',
     importance: 'Medium',
@@ -23,6 +23,36 @@ export default function NewRequest() {
     details: '',
     needed_by_date: ''
   });
+
+  const [adminFinancialState, setAdminFinancialState] = useState<string | null>(null);
+  const [loadingState, setLoadingState] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [adminContactName, setAdminContactName] = useState('Rih');
+  const [adminContactPhone, setAdminContactPhone] = useState('');
+  const [userMessage, setUserMessage] = useState('Minii huseltiig shalgaach, bi chamd zunduu hairtaii bnshuu ❤️');
+
+  React.useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        const stateDoc = await getDoc(doc(db, 'settings', 'admin_financial_state'));
+        if (stateDoc.exists()) {
+          setAdminFinancialState(stateDoc.data().state || null);
+        }
+
+        const contactDoc = await getDoc(doc(db, 'cnt', 'admin'));
+        if (contactDoc.exists()) {
+          const data = contactDoc.data();
+          if (data.Name) setAdminContactName(data.Name);
+          if (data.num) setAdminContactPhone(data.num);
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin data", err);
+      } finally {
+        setLoadingState(false);
+      }
+    };
+    fetchAdminData();
+  }, []);
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
@@ -36,7 +66,7 @@ export default function NewRequest() {
     setError('');
 
     try {
-      await addDoc(collection(db, 'requests'), {
+      const payload: any = {
         ...formData,
         amount: parseFloat(formData.amount),
         user_id: user.id,
@@ -44,15 +74,60 @@ export default function NewRequest() {
         status: 'Pending',
         created_at: Date.now(),
         updated_at: Date.now()
+      };
+
+      if (adminFinancialState) {
+        payload.adminFinancialStateAtSubmission = adminFinancialState;
+      }
+
+      const reqRef = await addDoc(collection(db, 'requests'), payload);
+
+      // Create Admin notification
+      const adminQuery = query(collection(db, 'users'), where('role', '==', 'Admin'));
+      const adminSnap = await getDocs(adminQuery);
+      
+      const notifPromises = adminSnap.docs.map(adminDoc => {
+        return addDoc(collection(db, 'notifications'), {
+          user_id: adminDoc.id,
+          request_id: reqRef.id,
+          message: `${user.username} just asked for money! 💸`,
+          is_read: false,
+          created_at: Date.now()
+        });
       });
+      await Promise.all(notifPromises);
 
       setSubmitted(true);
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
+    }
+  };
+
+  const handleOpenMessages = () => {
+    if (!adminContactPhone) return;
+    try {
+      const encodedMessage = encodeURIComponent(userMessage);
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      
+      if (isIOS) {
+        window.location.href = `sms:${adminContactPhone}&body=${encodedMessage}`;
+      } else {
+        window.location.href = `sms:${adminContactPhone}?body=${encodedMessage}`;
+      }
+    } catch (err) {
+      alert("Could not open Messages. Please copy the message manually.");
+    }
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(userMessage);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy", err);
+      alert("Could not copy the message manually.");
     }
   };
 
@@ -61,8 +136,22 @@ export default function NewRequest() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="max-w-md mx-auto mt-20 flex flex-col items-center justify-center p-12 bg-white/80 backdrop-blur-xl rounded-[3rem] shadow-2xl border border-pink-100 text-center"
+        className="max-w-md mx-auto mt-20 flex flex-col items-center justify-center p-10 bg-white/80 backdrop-blur-xl rounded-[3rem] shadow-2xl border border-pink-100 text-center relative"
       >
+        <AnimatePresence>
+          {copied && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="absolute -top-12 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2"
+            >
+              <Check className="h-4 w-4 text-pink-400" />
+              Message copied 💖
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.div 
           animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
           transition={{ duration: 0.5 }}
@@ -70,8 +159,49 @@ export default function NewRequest() {
         >
           <Heart className="h-10 w-10" fill="currentColor" />
         </motion.div>
-        <h2 className="text-2xl font-black text-gray-900 mb-2">Request Sent!</h2>
-        <p className="text-gray-500 font-medium tracking-wide">Fingers crossed he says yes! 💕</p>
+        <h2 className="text-3xl font-black text-gray-900 mb-2">Your request has been sent, princess 💖</h2>
+        <p className="text-gray-500 font-medium tracking-wide mb-8">Please message {adminContactName} so your request gets reviewed faster.</p>
+
+        <div className="bg-pink-50 border border-pink-100 rounded-2xl p-4 mb-6 relative w-full text-left">
+          <textarea 
+            value={userMessage}
+            onChange={(e) => setUserMessage(e.target.value)}
+            className="w-full bg-transparent border-none p-0 focus:ring-0 resize-none text-pink-900 font-bold italic h-20 focus:outline-none"
+          ></textarea>
+        </div>
+
+        <div className="flex flex-col gap-3 w-full">
+          {adminContactPhone && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleOpenMessages}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-4 text-base font-black text-white shadow-lg hover:shadow-xl focus:outline-none transition-all"
+            >
+              <Send className="h-5 w-5" />
+              Open Messages
+            </motion.button>
+          )}
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleCopy}
+            className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-pink-500 to-indigo-500 px-6 py-4 text-base font-black text-white shadow-lg hover:shadow-xl focus:outline-none transition-all"
+          >
+            {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+            {copied ? "Copied!" : "Copy message"}
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/dashboard')}
+            className="w-full rounded-2xl border-2 border-gray-200 bg-transparent px-6 py-4 text-base font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all"
+          >
+            Close
+          </motion.button>
+        </div>
       </motion.div>
     );
   }
@@ -94,6 +224,25 @@ export default function NewRequest() {
            <Heart size={200} />
         </div>
         
+        {!loadingState && adminFinancialState && (
+          <div className={`mb-8 p-4 rounded-2xl border flex items-center justify-center gap-3 shadow-inner ${
+            adminFinancialState === 'GOOD' ? 'bg-green-50 border-green-200 text-green-800' :
+            adminFinancialState === 'Okay' ? 'bg-orange-50 border-orange-200 text-orange-800' :
+            'bg-red-50 border-red-200 text-red-800'
+          }`}>
+            <span className="text-sm font-bold uppercase tracking-widest opacity-70">
+              Rih's financial state right now:
+            </span>
+            <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
+              adminFinancialState === 'GOOD' ? 'bg-green-200 text-green-900' :
+              adminFinancialState === 'Okay' ? 'bg-orange-200 text-orange-900' :
+              'bg-red-200 text-red-900'
+            }`}>
+              {adminFinancialState}
+            </span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
           {error && (
             <motion.div 
@@ -118,22 +267,11 @@ export default function NewRequest() {
                   step="0.01"
                   value={formData.amount}
                   onChange={handleChange}
-                  className="block w-full rounded-2xl border-0 py-4 pl-6 pr-24 text-2xl font-black text-gray-900 bg-gray-50 ring-1 ring-inset ring-gray-200 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-pink-400 transition-all placeholder:text-gray-300"
+                  className="block w-full rounded-2xl border-0 py-4 pl-6 pr-16 text-2xl font-black text-gray-900 bg-gray-50 ring-1 ring-inset ring-gray-200 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-pink-400 transition-all placeholder:text-gray-300"
                   placeholder="0.00"
                 />
-                <div className="absolute inset-y-0 right-2 flex items-center">
-                  <select
-                    name="currency"
-                    value={formData.currency}
-                    onChange={handleChange}
-                    className="h-[80%] rounded-xl border-transparent bg-white shadow-sm text-gray-700 focus:ring-pink-400 focus:border-pink-400 sm:text-lg font-bold pl-3 pr-8 w-24"
-                  >
-                    <option>USD</option>
-                    <option>EUR</option>
-                    <option>GBP</option>
-                    <option>MNT</option>
-                    <option>AUD</option>
-                  </select>
+                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                  <span className="text-2xl font-black text-gray-400">₮</span>
                 </div>
               </div>
             </div>

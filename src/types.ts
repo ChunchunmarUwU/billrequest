@@ -13,6 +13,7 @@ export interface MoneyRequest {
   status: 'Pending' | 'Approved' | 'Rejected';
   admin_comment?: string;
   decision_date?: number | null;
+  adminFinancialStateAtSubmission?: string;
   created_at: number;
   updated_at: number;
 }

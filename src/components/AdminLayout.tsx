@@ -22,15 +22,15 @@ export default function AdminLayout() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row pb-16 md:pb-0">
+    <div className="min-h-screen bg-gray-50 flex flex-col md:grid md:grid-cols-[260px_1fr] pb-16 md:pb-0">
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex w-64 bg-gray-900 border-r border-gray-800 flex-col fixed md:relative h-full z-40 transition-transform -translate-x-full md:translate-x-0">
+      <div className="hidden md:flex flex-col bg-gray-900 border-r border-gray-800 h-screen sticky top-0 z-40 overflow-y-auto">
         <div className="h-16 flex items-center px-6 border-b border-gray-800">
           <Briefcase className="h-6 w-6 text-indigo-400 mr-2" />
           <span className="text-lg font-bold text-white tracking-tight">Admin Console</span>
         </div>
         
-        <nav className="flex-1 px-4 py-6 space-y-1">
+        <nav className="flex-1 px-4 py-6 space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -39,13 +39,13 @@ export default function AdminLayout() {
                 key={item.name}
                 to={item.path}
                 className={cn(
-                  "group flex items-center px-3 py-2 text-sm font-medium rounded-md mb-1 transition-colors",
+                  "group flex items-center px-4 py-3 text-sm font-bold rounded-2xl transition-all",
                   isActive 
-                    ? "bg-gray-800 text-white" 
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20" 
+                    : "text-gray-400 hover:bg-gray-800 hover:text-white"
                 )}
               >
-                <Icon className={cn("mr-3 h-5 w-5", isActive ? "text-indigo-400" : "text-gray-400 group-hover:text-gray-300")} />
+                <Icon className={cn("mr-3 h-5 w-5", isActive ? "text-indigo-200" : "text-gray-500 group-hover:text-gray-300")} />
                 {item.name}
               </Link>
             );
@@ -55,16 +55,16 @@ export default function AdminLayout() {
         <div className="border-t border-gray-800 p-4">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white rounded-md transition-colors"
+            className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-400 hover:bg-gray-800 hover:text-white rounded-2xl transition-all"
           >
-            <LogOut className="mr-3 h-5 w-5 text-gray-400" />
+            <LogOut className="mr-3 h-5 w-5 text-gray-500" />
             Logout
           </button>
         </div>
       </div>
       
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-screen md:min-h-0 w-full md:w-auto">
+      <div className="flex-1 flex flex-col min-h-screen md:min-h-0 min-w-0">
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 md:static z-30">
           <div className="flex items-center">
             <Briefcase className="h-6 w-6 text-indigo-600 mr-3 md:hidden" />

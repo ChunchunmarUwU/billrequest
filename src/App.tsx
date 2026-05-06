@@ -12,6 +12,7 @@ import UserDashboard from './pages/UserDashboard';
 import NewRequest from './pages/NewRequest';
 import RequestDetails from './pages/RequestDetails';
 import UserProfile from './pages/UserProfile';
+import UserAnalytics from './pages/UserAnalytics';
 import Notifications from './pages/Notifications';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminAnalytics from './pages/AdminAnalytics';
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="dashboard" element={<UserDashboard />} />
         <Route path="request/new" element={<NewRequest />} />
         <Route path="request/:id" element={<RequestDetails />} />
+        <Route path="analytics" element={<UserAnalytics />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<UserProfile />} />
       </Route>

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { MoneyRequest } from '../types';
 import { format } from 'date-fns';
-import { ArrowLeft, CheckCircle2, Clock, XCircle, Calendar, Tag, AlertTriangle, MessageSquare, Heart, Sparkles, Send, Eye } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock, XCircle, Calendar, Tag, AlertTriangle, MessageSquare, Heart, Sparkles, Send, Eye, Activity } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { db } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -157,13 +157,29 @@ export default function RequestDetails() {
                 "text-indigo-500"
               )}>Amount Requested</span>
               <span className="text-5xl font-black text-gray-900">
-                {request.amount.toLocaleString()} <span className="text-2xl text-gray-400 font-bold">{request.currency}</span>
+                {request.amount.toLocaleString()} <span className="text-2xl text-gray-400 font-bold">₮</span>
               </span>
             </motion.div>
           </div>
         </div>
 
         <div className="p-8 sm:p-10 space-y-12">
+          
+          {request.adminFinancialStateAtSubmission && (
+            <div className="bg-gray-50 border border-gray-100 rounded-3xl p-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Activity className="h-5 w-5 text-gray-400" />
+                <span className="text-sm font-bold text-gray-600">Admin financial state when request was submitted:</span>
+              </div>
+              <span className={cn("px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest", 
+                request.adminFinancialStateAtSubmission === 'GOOD' ? 'bg-green-100 text-green-800' :
+                request.adminFinancialStateAtSubmission === 'Okay' ? 'bg-orange-100 text-orange-800' :
+                'bg-red-100 text-red-800'
+              )}>
+                {request.adminFinancialStateAtSubmission}
+              </span>
+            </div>
+          )}
 
           {/* Timeline */}
           <div>

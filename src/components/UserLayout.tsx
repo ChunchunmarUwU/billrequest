@@ -1,10 +1,11 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Coins, Home, PlusCircle, Bell, User, LogOut } from 'lucide-react';
+import { Coins, Home, PlusCircle, Bell, User, LogOut, BarChart3 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useEffect, useState } from 'react';
 import { auth, db } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 export default function UserLayout() {
   const { user } = useAuth();
@@ -13,15 +14,25 @@ export default function UserLayout() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    
     if (user) {
-      import('firebase/firestore').then(({ collection, query, where, onSnapshot }) => {
-        const q = query(collection(db, 'notifications'), where('user_id', '==', user.id));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+      const q = query(collection(db, 'notifications'), where('user_id', '==', user.id));
+      unsubscribe = onSnapshot(q, 
+        (snapshot) => {
           setUnreadCount(snapshot.docs.filter(d => !d.data().is_read).length);
-        });
-        return unsubscribe;
-      });
+        },
+        (error) => {
+          console.error('Firestore Error in notifications snapshot:', error);
+        }
+      );
     }
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [user]);
 
   const handleLogout = async () => {
@@ -32,6 +43,7 @@ export default function UserLayout() {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: Home },
     { name: 'New Request', path: '/request/new', icon: PlusCircle },
+    { name: 'Analytics', path: '/analytics', icon: BarChart3 },
     { name: 'Notifications', path: '/notifications', icon: Bell, badge: unreadCount },
     { name: 'Profile', path: '/profile', icon: User },
   ];
