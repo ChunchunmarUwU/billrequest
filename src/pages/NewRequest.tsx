@@ -170,8 +170,8 @@ export default function NewRequest() {
           ></textarea>
         </div>
 
-        <div className="flex flex-col gap-3 w-full">
-          {adminContactPhone && (
+        <div className="flex flex-col gap-3 w-full border-t border-pink-100 pt-6">
+          {adminContactPhone ? (
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -181,13 +181,15 @@ export default function NewRequest() {
               <Send className="h-5 w-5" />
               Open Messages
             </motion.button>
+          ) : (
+            <p className="text-sm font-medium text-pink-500 text-center mb-2">Admin contact is missing. Please copy the message manually.</p>
           )}
 
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleCopy}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-pink-500 to-indigo-500 px-6 py-4 text-base font-black text-white shadow-lg hover:shadow-xl focus:outline-none transition-all"
+            className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-400 px-6 py-4 text-base font-black text-white shadow-lg hover:shadow-xl focus:outline-none transition-all"
           >
             {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
             {copied ? "Copied!" : "Copy message"}
@@ -197,7 +199,7 @@ export default function NewRequest() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate('/dashboard')}
-            className="w-full rounded-2xl border-2 border-gray-200 bg-transparent px-6 py-4 text-base font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all"
+            className="w-full rounded-2xl border-2 border-gray-200 bg-transparent px-6 py-4 text-base font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900 focus:outline-none transition-all mt-2"
           >
             Close
           </motion.button>
