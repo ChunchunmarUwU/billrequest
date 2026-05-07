@@ -20,6 +20,8 @@ import UserWishlist from './pages/UserWishlist';
 import UserDateIdeas from './pages/UserDateIdeas';
 import AdminWishlist from './pages/AdminWishlist';
 import AdminDateIdeas from './pages/AdminDateIdeas';
+import UserQuests from './pages/UserQuests';
+import AdminQuests from './pages/AdminQuests';
 
 export default function App() {
   const { user, isLoading } = useAuth();
@@ -42,6 +44,7 @@ export default function App() {
         <Route path="profile" element={<UserProfile />} />
         <Route path="wishlist" element={<UserWishlist />} />
         <Route path="date-ideas" element={<UserDateIdeas />} />
+        <Route path="quests" element={<UserQuests />} />
       </Route>
 
       {/* Admin Routes */}
@@ -51,6 +54,7 @@ export default function App() {
         <Route path="profile" element={<UserProfile />} />
         <Route path="wishlist" element={<AdminWishlist />} />
         <Route path="date-ideas" element={<AdminDateIdeas />} />
+        <Route path="quests" element={<AdminQuests />} />
       </Route>
     </Routes>
   );

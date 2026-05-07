@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, BarChart3, Settings, LogOut, Briefcase, Gift, CalendarHeart } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Settings, LogOut, Briefcase, Gift, CalendarHeart, Target } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -19,6 +19,7 @@ export default function AdminLayout() {
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
     { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
     { name: 'Wishlist', path: '/admin/wishlist', icon: Gift },
+    { name: 'Quests', path: '/admin/quests', icon: Target },
     { name: 'Dates', path: '/admin/date-ideas', icon: CalendarHeart },
     { name: 'Profile', path: '/admin/profile', icon: Settings },
   ];

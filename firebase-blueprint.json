@@ -42,10 +42,82 @@
         "user_id": { "type": "string" },
         "request_id": { "type": "string" },
         "message": { "type": "string" },
+        "type": { "type": "string" },
+        "title": { "type": "string" },
         "is_read": { "type": "boolean" },
         "created_at": { "type": "number" }
       },
-      "required": ["user_id", "request_id", "message", "is_read", "created_at"]
+      "required": ["user_id", "message", "is_read", "created_at"]
+    },
+    "Wishlist": {
+      "title": "Wishlist",
+      "description": "User wishlist item",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "priority": { "type": "string" },
+        "estimatedPointValue": { "type": "number" },
+        "status": { "type": "string", "enum": ["Wanted", "Claimed", "Granted"] },
+        "claimedAt": { "type": "number" },
+        "grantedAt": { "type": "number" },
+        "adminNote": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["userId", "title", "category", "priority", "status", "createdAt", "updatedAt"]
+    },
+    "PrincessPoints": {
+      "title": "PrincessPoints",
+      "description": "User's princess points balance",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "balance": { "type": "number" },
+        "totalEarned": { "type": "number" },
+        "totalSpent": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["userId", "balance", "totalEarned", "totalSpent", "updatedAt"]
+    },
+    "PointHistory": {
+      "title": "PointHistory",
+      "description": "Log of point transactions",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["earned", "spent"] },
+        "sourceType": { "type": "string", "enum": ["quest", "wishlist"] },
+        "sourceId": { "type": "string" },
+        "amount": { "type": "number" },
+        "reason": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["userId", "type", "sourceType", "sourceId", "amount", "reason", "createdBy", "createdAt"]
+    },
+    "Quest": {
+      "title": "Quest",
+      "description": "Mission for earning princess points",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "pointReward": { "type": "number" },
+        "difficulty": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Submitted", "Completed", "Rejected", "Expired"] },
+        "assignedTo": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "proofText": { "type": "string" },
+        "adminComment": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "submittedAt": { "type": "number" },
+        "approvedAt": { "type": "number" }
+      },
+      "required": ["title", "pointReward", "status", "createdBy", "createdAt", "updatedAt"]
     }
   },
   "firestore": {
@@ -60,6 +132,22 @@
     "/notifications/{notificationId}": {
       "schema": { "$ref": "#/entities/Notification" },
       "description": "Stores user notifications"
+    },
+    "/wishlist/{wishlistId}": {
+      "schema": { "$ref": "#/entities/Wishlist" },
+      "description": "User wishlist items"
+    },
+    "/princessPoints/{userId}": {
+      "schema": { "$ref": "#/entities/PrincessPoints" },
+      "description": "User princess points balance"
+    },
+    "/pointHistory/{historyId}": {
+      "schema": { "$ref": "#/entities/PointHistory" },
+      "description": "Log of point transactions"
+    },
+    "/quests/{questId}": {
+      "schema": { "$ref": "#/entities/Quest" },
+      "description": "Missions for earning points"
     }
   }
 }

@@ -1,17 +1,19 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Coins, Home, PlusCircle, Bell, User, LogOut, BarChart3, Gift, CalendarHeart } from 'lucide-react';
+import { Home, PlusCircle, Bell, User, LogOut, BarChart3, Gift, CalendarHeart, MoreHorizontal, X, Target } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useEffect, useState } from 'react';
 import { auth, db } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function UserLayout() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -35,23 +37,44 @@ export default function UserLayout() {
     };
   }, [user]);
 
+  useEffect(() => {
+    setIsMoreOpen(false);
+  }, [location.pathname]);
+
   const handleLogout = async () => {
     await signOut(auth);
     navigate('/');
   };
 
-  const navItems = [
+  const desktopNavItems = [
     { name: 'Dashboard', path: '/dashboard', icon: Home },
     { name: 'New Req', path: '/request/new', icon: PlusCircle },
     { name: 'Analytics', path: '/analytics', icon: BarChart3 },
+    { name: 'Quests', path: '/quests', icon: Target },
     { name: 'Wishlist', path: '/wishlist', icon: Gift },
     { name: 'Dates', path: '/date-ideas', icon: CalendarHeart },
     { name: 'Notifs', path: '/notifications', icon: Bell, badge: unreadCount },
     { name: 'Profile', path: '/profile', icon: User },
   ];
 
+  const mainMobileItems = [
+    { name: 'Dashboard', path: '/dashboard', icon: Home },
+    { name: 'New Req', path: '/request/new', icon: PlusCircle },
+    { name: 'Quests', path: '/quests', icon: Target },
+    { name: 'Wishlist', path: '/wishlist', icon: Gift },
+  ];
+
+  const moreMobileItems = [
+    { name: 'Analytics', path: '/analytics', icon: BarChart3 },
+    { name: 'Dates', path: '/date-ideas', icon: CalendarHeart },
+    { name: 'Notifs', path: '/notifications', icon: Bell, badge: unreadCount },
+    { name: 'Profile', path: '/profile', icon: User },
+  ];
+
+  const isMoreActive = moreMobileItems.some(item => location.pathname === item.path);
+
   return (
-    <div className="min-h-screen relative pb-16 sm:pb-0">
+    <div className="min-h-screen relative pb-20 sm:pb-0">
       {/* Background Image Container with Soft Fallback Gradient */}
       <div className="fixed inset-0 z-[-1] bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
         <div 
@@ -71,7 +94,7 @@ export default function UserLayout() {
             </div>
             
             <div className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto scrollbar-hide py-2">
-              {navItems.map((item) => {
+              {desktopNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
                 return (
@@ -110,7 +133,7 @@ export default function UserLayout() {
       <div className="sm:hidden flex items-center justify-between px-4 h-16 bg-white/80 backdrop-blur-md border-b shadow-sm sticky top-0 z-40">
         <div className="flex items-center">
           <span className="text-lg font-bold text-gray-900 tracking-tight">
-            {navItems.find(i => i.path === location.pathname)?.name || 'Portal'}
+            {desktopNavItems.find(i => i.path === location.pathname)?.name || 'Portal'}
           </span>
         </div>
         <button onClick={handleLogout} className="text-gray-500 hover:text-gray-700 p-2">
@@ -123,8 +146,11 @@ export default function UserLayout() {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-200 flex justify-around items-center h-16 z-50 pb-safe overflow-x-auto scrollbar-hide px-2">
-        {navItems.map((item) => {
+      <nav 
+        className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-200 flex justify-around items-center z-50 px-2"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)', height: 'calc(4rem + env(safe-area-inset-bottom))' }}
+      >
+        {mainMobileItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
           return (
@@ -132,21 +158,96 @@ export default function UserLayout() {
               key={item.name}
               to={item.path}
               className={cn(
-                "relative flex flex-col items-center justify-center min-w-[60px] h-full mx-1 flex-shrink-0",
+                "relative flex flex-col items-center justify-center w-[20%] h-16 flex-shrink-0",
                 isActive ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"
               )}
             >
-              <Icon className="h-5 w-5 mb-1" />
-              <span className="text-[9px] font-medium leading-tight whitespace-nowrap text-center">{item.name}</span>
-              {item.badge !== undefined && item.badge > 0 && (
-                <span className="absolute top-1 right-2 translate-x-1 -translate-y-1 inline-flex items-center justify-center rounded-full bg-indigo-500 px-1.5 py-0.5 text-[9px] font-bold text-white border-2 border-white">
-                  {item.badge}
-                </span>
-              )}
+              <Icon className={cn("h-5 w-5 mb-1 transition-transform", isActive && "scale-110")} />
+              <span className="text-[10px] font-medium leading-tight whitespace-nowrap text-center">{item.name}</span>
             </Link>
           );
         })}
+        <button
+          onClick={() => setIsMoreOpen(!isMoreOpen)}
+          className={cn(
+            "relative flex flex-col items-center justify-center w-[20%] h-16 flex-shrink-0 focus:outline-none",
+            (isMoreActive || isMoreOpen) ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"
+          )}
+        >
+          {isMoreOpen ? <X className="h-5 w-5 mb-1" /> : <MoreHorizontal className="h-5 w-5 mb-1" />}
+          <span className="text-[10px] font-medium leading-tight whitespace-nowrap text-center">More</span>
+          {(!isMoreOpen && unreadCount > 0) && (
+            <span className="absolute top-1 right-2 translate-x-1 inline-flex items-center justify-center rounded-full bg-indigo-500 px-1.5 py-0.5 text-[9px] font-bold text-white border-2 border-white">
+              {unreadCount}
+            </span>
+          )}
+        </button>
       </nav>
+
+      {/* Mobile More Menu */}
+      <AnimatePresence>
+        {isMoreOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMoreOpen(false)}
+              className="sm:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+              style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="sm:hidden fixed left-0 right-0 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-t-3xl z-40 overflow-hidden"
+              style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
+            >
+              <div className="p-4 space-y-1">
+                <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4" />
+                {moreMobileItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.path}
+                      onClick={() => setIsMoreOpen(false)}
+                      className={cn(
+                        "flex items-center px-4 py-4 rounded-2xl transition-colors",
+                        isActive ? "bg-indigo-50 text-indigo-700 font-bold" : "text-gray-700 hover:bg-gray-50 font-medium"
+                      )}
+                    >
+                      <div className={cn("p-2 rounded-xl mr-4", isActive ? "bg-indigo-100/50" : "bg-gray-100")}>
+                        <Icon className={cn("h-5 w-5", isActive ? "text-indigo-600" : "text-gray-500")} />
+                      </div>
+                      <span className="flex-1">{item.name}</span>
+                      {item.badge !== undefined && item.badge > 0 && (
+                        <span className="inline-flex items-center justify-center rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-bold text-white">
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+                <button
+                  onClick={() => {
+                    setIsMoreOpen(false);
+                    handleLogout();
+                  }}
+                  className="w-full flex items-center px-4 py-4 rounded-2xl transition-colors text-red-600 hover:bg-red-50 font-medium text-left"
+                >
+                  <div className="p-2 rounded-xl mr-4 bg-red-50">
+                    <LogOut className="h-5 w-5 text-red-500" />
+                  </div>
+                  Logout
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

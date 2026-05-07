@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { WishlistItem } from '../types';
+import { WishlistItem, PrincessPoints } from '../types';
 import { db } from '../lib/firebase';
-import { collection, query, where, orderBy, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { Gift, Search, Plus, X, Tag, Star, ChevronDown, Check, EyeOff } from 'lucide-react';
+import { collection, query, where, orderBy, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
+import { Gift, Search, Plus, X, Tag, Star, ChevronDown, Check, EyeOff, Crown, Copy, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { format } from 'date-fns';
@@ -14,17 +14,18 @@ const PRIORITIES = ['Low', 'Medium', 'High', 'Dream'] as const;
 export default function UserWishlist() {
   const { user } = useAuth();
   const [items, setItems] = useState<WishlistItem[]>([]);
+  const [points, setPoints] = useState<PrincessPoints | null>(null);
   const [loading, setLoading] = useState(true);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
+  const [showCopyMessage, setShowCopyMessage] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'Gift' as WishlistItem['category'],
-    priority: 'Medium' as WishlistItem['priority'],
-    estimatedAmount: ''
+    priority: 'Medium' as WishlistItem['priority']
   });
 
   // Filters
@@ -34,18 +35,27 @@ export default function UserWishlist() {
 
   useEffect(() => {
     if (!user) return;
-    fetchItems();
+    fetchData();
   }, [user]);
 
-  const fetchItems = async () => {
+  const fetchData = async () => {
     try {
+      // Fetch Wishlist Items
       const q = query(
         collection(db, 'wishlist'),
         where('userId', '==', user!.id),
         orderBy('createdAt', 'desc')
       );
       const snapshot = await getDocs(q);
-      setItems(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as WishlistItem)));
+      setItems(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as WishlistItem)));
+
+      // Fetch Princess Points
+      const pointsDoc = await getDoc(doc(db, 'princessPoints', user!.id));
+      if (pointsDoc.exists()) {
+        setPoints({ ...pointsDoc.data(), id: pointsDoc.id } as PrincessPoints);
+      } else {
+        setPoints({ id: user!.id, userId: user!.id, balance: 0, totalEarned: 0, totalSpent: 0, updatedAt: Date.now() });
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -62,13 +72,12 @@ export default function UserWishlist() {
         description: formData.description,
         category: formData.category,
         priority: formData.priority,
-        estimatedAmount: formData.estimatedAmount ? parseFloat(formData.estimatedAmount) : 0,
         updatedAt: Date.now()
       };
 
-      if (editingItem) {
+      if (editingItem && editingItem.status === 'Wanted') {
         await updateDoc(doc(db, 'wishlist', editingItem.id), payload);
-      } else {
+      } else if (!editingItem) {
         await addDoc(collection(db, 'wishlist'), {
           ...payload,
           userId: user.id,
@@ -77,42 +86,80 @@ export default function UserWishlist() {
         });
       }
       setIsModalOpen(false);
-      setFormData({ title: '', description: '', category: 'Gift', priority: 'Medium', estimatedAmount: '' });
+      setFormData({ title: '', description: '', category: 'Gift', priority: 'Medium' });
       setEditingItem(null);
-      fetchItems();
+      fetchData();
     } catch (error) {
       console.error(error);
     }
   };
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  const handleDelete = async (item: WishlistItem, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (item.status !== 'Wanted') return;
     if (!window.confirm("Delete this wishlist item?")) return;
     try {
-      await deleteDoc(doc(db, 'wishlist', id));
-      fetchItems();
+      await deleteDoc(doc(db, 'wishlist', item.id));
+      fetchData();
     } catch(e) {
       console.error(e);
     }
   };
 
+  const handleClaim = async (item: WishlistItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user || !points || item.status !== 'Wanted' || item.estimatedPointValue == null || points.balance < item.estimatedPointValue) return;
+    
+    if (!window.confirm(`Claim "${item.title}" for ${item.estimatedPointValue} Princess Points?`)) return;
+
+    try {
+      // 1. Update Wishlist Item Status
+      await updateDoc(doc(db, 'wishlist', item.id), {
+        status: 'Claimed',
+        claimedAt: Date.now(),
+        updatedAt: Date.now()
+      });
+
+      // 2. Create Admin Notification
+      await addDoc(collection(db, 'notifications'), {
+        user_id: 'admin', 
+        type: 'WISHLIST_CLAIMED',
+        title: 'Wishlist item claimed',
+        message: `${user.username || 'Gunj'} claimed a wishlist item: ${item.title}`,
+        request_id: item.id,
+        is_read: false,
+        created_at: Date.now()
+      });
+
+      setShowCopyMessage(true);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const copyMessage = () => {
+    navigator.clipboard.writeText("Minii wishlist haraachee claim hiilee, love ya 💖");
+    alert("Message copied 💖\nPlease send this message to Rih so he can review your claimed wishlist item.");
+    setShowCopyMessage(false);
+  };
+
   const openEdit = (item: WishlistItem) => {
+    if (item.status !== 'Wanted') return;
     setEditingItem(item);
     setFormData({
       title: item.title,
       description: item.description || '',
       category: item.category,
-      priority: item.priority,
-      estimatedAmount: item.estimatedAmount?.toString() || ''
+      priority: item.priority
     });
     setIsModalOpen(true);
   };
 
   const getStatusBadge = (status: string) => {
     switch(status) {
-      case 'Planned': return "bg-blue-100 text-blue-700 border-blue-200";
-      case 'Done': return "bg-green-100 text-green-700 border-green-200";
-      case 'Hidden Surprise': return "bg-purple-100 text-purple-700 border-purple-200";
+      case 'Claimed': return "bg-purple-100 text-purple-700 border-purple-200";
+      case 'Granted': return "bg-green-100 text-green-700 border-green-200";
       default: return "bg-pink-100 text-pink-700 border-pink-200";
     }
   };
@@ -127,46 +174,79 @@ export default function UserWishlist() {
   }, [items, statusFilter, categoryFilter, priorityFilter]);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto pb-10">
       <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 shadow-sm border border-indigo-100 flex flex-col sm:flex-row justify-between items-start sm:items-center relative overflow-hidden gap-6">
         <div className="absolute top-0 right-0 opacity-10 -mr-6 -mt-6">
           <Gift size={120} />
         </div>
-        <div className="z-10">
-          <h1 className="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-2">
-            My Wishlist <Gift className="h-6 w-6 text-indigo-500" />
-          </h1>
-          <p className="text-gray-500 font-medium mt-1">Add things you want, big or small.</p>
+        <div className="z-10 w-full flex flex-col sm:flex-row justify-between items-center sm:items-start">
+          <div className="mb-4 sm:mb-0 text-center sm:text-left">
+            <h1 className="text-3xl font-black text-gray-800 tracking-tight flex items-center justify-center sm:justify-start gap-2">
+              My Wishlist <Gift className="h-6 w-6 text-indigo-500" />
+            </h1>
+            <p className="text-gray-500 font-medium mt-1">Add things you want, big or small.</p>
+          </div>
+          {points && (
+             <div className="bg-gradient-to-r from-purple-100 to-indigo-100 px-6 py-3 rounded-2xl flex items-center gap-3 border border-purple-200 shadow-sm mr-0 sm:mr-4">
+                <div className="bg-white p-2 rounded-xl text-purple-600 shadow-sm flex-shrink-0">
+                  <Crown className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-purple-600 tracking-wider">Princess Points</p>
+                  <p className="text-xl font-black text-purple-900 leading-tight">{points.balance.toLocaleString()}</p>
+                </div>
+             </div>
+          )}
         </div>
         <button
           onClick={() => {
             setEditingItem(null);
-            setFormData({ title: '', description: '', category: 'Gift', priority: 'Medium', estimatedAmount: '' });
+            setFormData({ title: '', description: '', category: 'Gift', priority: 'Medium' });
             setIsModalOpen(true);
           }}
-          className="z-10 w-full sm:w-auto bg-indigo-500 hover:bg-indigo-600 text-white p-3 rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center font-bold gap-2 pr-5"
+          className="z-10 w-full sm:w-auto bg-indigo-500 hover:bg-indigo-600 text-white p-3 rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center font-bold gap-2 sm:px-6"
         >
           <Plus className="h-5 w-5" /> Add
         </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-full rounded-2xl border border-gray-100 bg-white/60 backdrop-blur-md p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-full rounded-2xl border border-gray-100 bg-white/60 backdrop-blur-md p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700 shadow-sm">
           <option value="All">All Statuses</option>
           <option value="Wanted">Wanted</option>
-          <option value="Planned">Planned</option>
-          <option value="Hidden Surprise">Hidden Surprise</option>
-          <option value="Done">Done</option>
+          <option value="Claimed">Claimed</option>
+          <option value="Granted">Granted</option>
         </select>
-        <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="w-full rounded-2xl border border-gray-100 bg-white/60 backdrop-blur-md p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700">
+        <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="w-full rounded-2xl border border-gray-100 bg-white/60 backdrop-blur-md p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700 shadow-sm">
           <option value="All">All Categories</option>
           {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)} className="w-full rounded-2xl border border-gray-100 bg-white/60 backdrop-blur-md p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700">
+        <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)} className="w-full rounded-2xl border border-gray-100 bg-white/60 backdrop-blur-md p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700 shadow-sm">
           <option value="All">All Priorities</option>
           {PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
       </div>
+
+      {showCopyMessage && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-pink-50 border border-pink-200 p-6 rounded-[2rem] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm"
+        >
+          <div className="flex items-center gap-4 text-pink-700 font-medium text-sm">
+            <div className="bg-pink-100 p-3 rounded-full text-pink-500 flex-shrink-0">
+              <Heart className="h-6 w-6 fill-pink-500" />
+            </div>
+            <p>Yay! You claimed it. Please send this message to Rih so he can review your claimed wishlist item.</p>
+          </div>
+          <button 
+            onClick={copyMessage}
+            className="w-full sm:w-auto bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 flex-shrink-0"
+          >
+            <Copy className="h-4 w-4" /> Copy message
+          </button>
+        </motion.div>
+      )}
 
       {loading ? (
         <div className="p-10 flex justify-center"><div className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full" /></div>
@@ -189,7 +269,10 @@ export default function UserWishlist() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 onClick={() => openEdit(item)}
-                className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 hover:border-indigo-200 transition-colors cursor-pointer group"
+                className={cn(
+                    "bg-white/90 backdrop-blur-md rounded-[2rem] p-6 shadow-sm border flex flex-col group cursor-pointer transition-all",
+                    item.status === 'Claimed' ? "border-purple-200" : item.status === 'Granted' ? "border-green-200 bg-green-50/50" : "border-gray-100 hover:border-indigo-200 hover:shadow-md"
+                )}
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex gap-2 items-center flex-wrap">
@@ -200,22 +283,52 @@ export default function UserWishlist() {
                       {item.category}
                     </span>
                   </div>
-                  <button onClick={(e) => handleDelete(item.id, e)} className="text-gray-300 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50">
-                    <X className="h-4 w-4" />
-                  </button>
+                  {item.status === 'Wanted' && (
+                    <button onClick={(e) => handleDelete(item, e)} className="text-gray-300 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50">
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
                 <h3 className="text-lg font-bold text-gray-800 line-clamp-1">{item.title}</h3>
                 {item.description && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{item.description}</p>}
                 
-                <div className="mt-4 flex items-center justify-between text-sm font-semibold">
+                <div className="mt-4 mt-auto flex items-center justify-between text-sm font-semibold">
                   <div className="flex items-center gap-1.5 text-orange-400">
                     <Star className="h-4 w-4 fill-current" />
                     {item.priority} Priority
                   </div>
-                  {item.estimatedAmount ? (
-                    <span className="text-gray-600 bg-gray-50 px-2 py-1 rounded-lg">~ {item.estimatedAmount.toLocaleString()} ₮</span>
-                  ) : null}
+                  {item.estimatedPointValue != null && (
+                    <span className="flex items-center gap-1.5 text-purple-600 bg-purple-50 px-2 py-1.5 rounded-lg font-bold">
+                      <Crown className="h-3.5 w-3.5" />
+                      {item.estimatedPointValue.toLocaleString()} pts
+                    </span>
+                  )}
                 </div>
+                
+                {item.adminNote && (
+                  <div className="mt-4 p-3 bg-indigo-50/50 rounded-xl text-sm italic text-indigo-700 border border-indigo-100">
+                    <span className="font-black text-indigo-800 not-italic block mb-0.5 text-[10px] uppercase tracking-wider">Note from Rih</span>
+                    "{item.adminNote}"
+                  </div>
+                )}
+                
+                {/* Claim Button Logic */}
+                {item.status === 'Wanted' && item.estimatedPointValue != null ? (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    {(points?.balance ?? 0) >= item.estimatedPointValue ? (
+                      <button 
+                        onClick={(e) => handleClaim(item, e)}
+                        className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95"
+                      >
+                        Claim with Points
+                      </button>
+                    ) : (
+                      <div className="w-full bg-gray-50 text-gray-400 text-center font-bold py-2.5 rounded-xl border border-gray-100 text-sm">
+                        Not enough Princess Points yet 💖
+                      </div>
+                    )}
+                  </div>
+                ) : null}
               </motion.div>
             ))}
           </AnimatePresence>
@@ -227,12 +340,12 @@ export default function UserWishlist() {
           <motion.div 
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden"
+            className="bg-white rounded-[2rem] shadow-xl w-full max-w-md overflow-hidden"
           >
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <Gift className="h-5 w-5 text-indigo-500" />
-                {editingItem ? 'Edit Item' : 'New Wishlist Item'}
+                {editingItem ? 'View/Edit Item' : 'New Wishlist Item'}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 bg-white p-1 rounded-full shadow-sm">
                 <X className="h-5 w-5" />
@@ -241,35 +354,33 @@ export default function UserWishlist() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Title</label>
-                <input required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-medium text-gray-800" placeholder="e.g. New Shoes" />
+                <input disabled={editingItem?.status !== 'Wanted'} required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-medium text-gray-800 disabled:opacity-60 disabled:bg-gray-50" placeholder="e.g. New Shoes" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Description (Optional)</label>
-                <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={3} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none text-sm font-medium text-gray-800" placeholder="Link, size, color..." />
+                <textarea disabled={editingItem?.status !== 'Wanted'} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={3} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none text-sm font-medium text-gray-800 disabled:opacity-60 disabled:bg-gray-50" placeholder="Link, size, color..." />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Category</label>
-                  <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value as any})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700">
+                  <select disabled={editingItem?.status !== 'Wanted'} value={formData.category} onChange={e => setFormData({...formData, category: e.target.value as any})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700 disabled:opacity-60 disabled:bg-gray-50">
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Priority</label>
-                  <select value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value as any})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700">
+                  <select disabled={editingItem?.status !== 'Wanted'} value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value as any})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700 disabled:opacity-60 disabled:bg-gray-50">
                     {PRIORITIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Est. Amount (Optional)</label>
-                <input type="number" value={formData.estimatedAmount} onChange={e => setFormData({...formData, estimatedAmount: e.target.value})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-medium text-gray-800" placeholder="e.g. 50000" />
-              </div>
-              <div className="pt-4">
-                <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-indigo-700 transition-colors">
-                  {editingItem ? 'Save Changes' : 'Add to Wishlist'}
-                </button>
-              </div>
+              {(!editingItem || editingItem?.status === 'Wanted') && (
+                <div className="pt-4">
+                  <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-indigo-700 transition-colors">
+                    {editingItem ? 'Save Changes' : 'Add to Wishlist'}
+                  </button>
+                </div>
+              )}
             </form>
           </motion.div>
         </div>

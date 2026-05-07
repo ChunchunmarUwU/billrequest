@@ -2,15 +2,22 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { MoneyRequest } from '../types';
 import { format } from 'date-fns';
-import { CheckCircle2, XCircle, Search, Clock, ArrowRight, AlertCircle, FileText, Download, Briefcase, Heart } from 'lucide-react';
+import { CheckCircle2, XCircle, Search, Clock, ArrowRight, AlertCircle, FileText, Download, Briefcase, Heart, Crown, Target, Gift } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { db } from '../lib/firebase';
-import { collection, query, orderBy, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, updateDoc, addDoc, where } from 'firebase/firestore';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [requests, setRequests] = useState<MoneyRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const [adminStats, setAdminStats] = useState({
+    pointsBalance: 0,
+    pendingQuests: 0,
+    claimedWishlist: 0,
+  });
   
   // Filters
   const [statusFilter, setStatusFilter] = useState('Pending');
@@ -47,6 +54,26 @@ export default function AdminDashboard() {
         ...doc.data()
       })) as MoneyRequest[];
       setRequests(reqs);
+
+      // Fetch points stats
+      const ppSnap = await getDocs(collection(db, 'princessPoints'));
+      let pts = 0;
+      if (!ppSnap.empty) {
+        pts = ppSnap.docs[0].data().balance;
+      }
+      
+      const qSnap = await getDocs(query(collection(db, 'quests'), where('status', '==', 'Submitted')));
+      const pendingQ = qSnap.size;
+
+      const wSnap = await getDocs(query(collection(db, 'wishlist'), where('status', '==', 'Claimed')));
+      const claimedW = wSnap.size;
+
+      setAdminStats({
+        pointsBalance: pts,
+        pendingQuests: pendingQ,
+        claimedWishlist: claimedW,
+      });
+
     } catch (err) {
       console.error(err);
       showToast('error', 'Failed to load requests.');
@@ -179,25 +206,39 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Days Together & Header Section */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 z-10 mb-8">
-        <div className="md:col-span-3 bg-white rounded-[2rem] shadow-sm border border-gray-200 p-6 sm:p-8 flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
-            <Briefcase className="h-6 w-6" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-black tracking-tight text-gray-900">Admin Console</h2>
-            <p className="text-sm font-medium text-gray-500">Manage and review incoming requests.</p>
-          </div>
+      {/* Overview Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-6 gap-4 z-10 mb-8">
+        <div className="col-span-2 bg-white rounded-[2rem] shadow-sm border border-gray-200 p-6 flex flex-col justify-center relative overflow-hidden">
+          <Briefcase className="h-8 w-8 text-indigo-500 mb-3" />
+          <h2 className="text-2xl font-black text-gray-900 tracking-tight">Admin Console</h2>
+          <p className="text-sm font-medium text-gray-500">Manage and review everything here.</p>
         </div>
 
-        <div className="md:col-span-1 bg-white rounded-[2rem] shadow-sm border border-pink-100 p-6 flex flex-col items-center justify-center relative overflow-hidden group">
+        <div className="col-span-1 bg-white rounded-[2rem] shadow-sm border border-pink-100 p-6 flex flex-col items-center justify-center relative overflow-hidden group hover:shadow-md transition-all">
           <div className="absolute opacity-5 -right-4 -top-4">
              <Heart size={80} className="text-pink-500" fill="currentColor" />
           </div>
-          <Heart className="h-6 w-6 text-pink-500 mb-2 fill-pink-500" />
+          <Heart className="h-6 w-6 text-pink-500 mb-2 fill-pink-500 animate-pulse" />
           <h3 className="text-2xl font-black text-gray-800">{daysTogether}</h3>
-          <p className="text-[10px] font-bold text-pink-500 uppercase tracking-wider mt-1">Days Together</p>
+          <p className="text-[10px] font-bold text-pink-500 uppercase tracking-wider mt-1 text-center">Days Together</p>
+        </div>
+
+        <Link to="/admin/quests" className="col-span-1 bg-white rounded-[2rem] shadow-sm border border-amber-200 p-6 flex flex-col items-center justify-center relative overflow-hidden group hover:border-amber-300 hover:shadow-md transition-all">
+          <Target className="h-6 w-6 text-amber-500 mb-2" />
+          <h3 className="text-2xl font-black text-gray-800">{adminStats.pendingQuests}</h3>
+          <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mt-1 text-center">Pending Quests</p>
+        </Link>
+        
+        <Link to="/admin/wishlist" className="col-span-1 bg-white rounded-[2rem] shadow-sm border border-purple-200 p-6 flex flex-col items-center justify-center relative overflow-hidden group hover:border-purple-300 hover:shadow-md transition-all">
+          <Gift className="h-6 w-6 text-purple-500 mb-2" />
+          <h3 className="text-2xl font-black text-gray-800">{adminStats.claimedWishlist}</h3>
+          <p className="text-[10px] font-bold text-purple-600 uppercase tracking-wider mt-1 text-center">Claimed Wishlist</p>
+        </Link>
+
+        <div className="col-span-1 bg-white rounded-[2rem] shadow-sm border border-fuchsia-200 p-6 flex flex-col items-center justify-center relative overflow-hidden group hover:shadow-md transition-all">
+          <Crown className="h-6 w-6 text-fuchsia-500 mb-2" />
+          <h3 className="text-2xl font-black text-gray-800">{adminStats.pointsBalance} 💖</h3>
+          <p className="text-[10px] font-bold text-fuchsia-600 uppercase tracking-wider mt-1 text-center">Gunj's Points</p>
         </div>
       </div>
 

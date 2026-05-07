@@ -21,8 +21,10 @@ export interface MoneyRequest {
 export interface Notification {
   id: string;
   user_id: string;
-  request_id: string;
+  request_id?: string;
   message: string;
+  type?: string;
+  title?: string;
   is_read: boolean;
   created_at: number;
 }
@@ -34,10 +36,51 @@ export interface WishlistItem {
   description?: string;
   category: 'Gift' | 'Food' | 'Date' | 'Shopping' | 'Beauty' | 'Experience' | 'Other';
   priority: 'Low' | 'Medium' | 'High' | 'Dream';
-  estimatedAmount?: number;
-  status: 'Wanted' | 'Planned' | 'Done' | 'Hidden Surprise';
+  estimatedPointValue?: number;
+  status: 'Wanted' | 'Claimed' | 'Granted';
+  claimedAt?: number;
+  grantedAt?: number;
+  adminNote?: string;
   createdAt: number;
   updatedAt: number;
+}
+
+export interface PrincessPoints {
+  id: string;
+  userId: string;
+  balance: number;
+  totalEarned: number;
+  totalSpent: number;
+  updatedAt: number;
+}
+
+export interface PointHistory {
+  id: string;
+  userId: string;
+  type: 'earned' | 'spent';
+  sourceType: 'quest' | 'wishlist';
+  sourceId: string;
+  amount: number;
+  reason: string;
+  createdBy: string;
+  createdAt: number;
+}
+
+export interface Quest {
+  id: string;
+  title: string;
+  description: string;
+  pointReward: number;
+  difficulty: 'Easy' | 'Medium' | 'Hard' | 'Extreme';
+  status: 'Active' | 'Submitted' | 'Completed' | 'Rejected' | 'Expired';
+  assignedTo?: string;
+  createdBy: string;
+  proofText?: string;
+  adminComment?: string;
+  createdAt: number;
+  updatedAt: number;
+  submittedAt?: number;
+  approvedAt?: number;
 }
 
 export interface DateIdea {

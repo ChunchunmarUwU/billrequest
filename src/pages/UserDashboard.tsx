@@ -1,18 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { MoneyRequest } from '../types';
+import { MoneyRequest, PrincessPoints } from '../types';
 import { format } from 'date-fns';
 import { CheckCircle2, Clock, XCircle, ChevronRight, Search, Heart, Sparkles, Plus, Gift, CalendarHeart, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { db } from '../lib/firebase';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, doc, getDoc } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function UserDashboard() {
   const { user } = useAuth();
   const [requests, setRequests] = useState<MoneyRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [points, setPoints] = useState<PrincessPoints | null>(null);
+  const [pointsLoading, setPointsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
 
@@ -41,7 +43,22 @@ export default function UserDashboard() {
       }
     };
     
+    const fetchPoints = async () => {
+      try {
+        const docRef = doc(db, 'princessPoints', user.id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setPoints({ id: docSnap.id, ...docSnap.data() } as PrincessPoints);
+        }
+      } catch (err) {
+        console.error("Error fetching points:", err);
+      } finally {
+        setPointsLoading(false);
+      }
+    };
+    
     fetchRequests();
+    fetchPoints();
   }, [user]);
 
   const filteredRequests = requests.filter(req => {
@@ -147,11 +164,25 @@ export default function UserDashboard() {
           <p className="text-xs font-semibold text-gray-500 mt-1">Save cute date plans</p>
         </Link>
         
-        <div className="bg-gray-50/80 backdrop-blur-md rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col items-center text-center justify-center relative overflow-hidden opacity-70">
-          <Crown className="h-8 w-8 text-gray-400 mb-3" />
-          <h3 className="text-xl font-bold text-gray-500">Princess Points</h3>
-          <p className="text-xs font-bold text-purple-400 uppercase tracking-widest mt-2 bg-purple-50 px-2 py-1 rounded-md">Coming Soon</p>
-        </div>
+        <Link to="/quests" className="bg-white/80 backdrop-blur-md rounded-3xl p-6 border border-purple-100 shadow-sm flex flex-col items-center text-center justify-center relative overflow-hidden group hover:bg-white transition-colors">
+          <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+            <Crown size={80} className="text-purple-500" />
+          </div>
+          <Crown className="h-8 w-8 text-purple-500 mb-3" />
+          <h3 className="text-xl font-bold text-gray-800">Princess Points</h3>
+          {pointsLoading ? (
+            <p className="text-xs font-semibold text-gray-500 mt-1 animate-pulse">Loading points...</p>
+          ) : (
+            <div className="mt-1 flex flex-col items-center">
+              <span className="text-lg font-black text-purple-600">{points?.balance || 0} 💖</span>
+              {points ? (
+                <span className="text-[10px] font-semibold text-gray-400 mt-0.5">Earned: {points.totalEarned} | Spent: {points.totalSpent}</span>
+              ) : (
+                <span className="text-[10px] font-semibold text-gray-400 mt-0.5">Complete quests to earn points.</span>
+              )}
+            </div>
+          )}
+        </Link>
       </motion.div>
 
       <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-sm border border-pink-100 overflow-hidden">

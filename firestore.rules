@@ -71,17 +71,48 @@ service cloud.firestore {
       
       allow create: if isSignedIn() && 
                     request.resource.data.userId == request.auth.uid && 
-                    request.resource.data.keys().hasAll(['userId', 'title', 'category', 'priority', 'status', 'createdAt', 'updatedAt']);
+                    request.resource.data.keys().hasAll(['userId', 'title', 'category', 'priority', 'status', 'createdAt', 'updatedAt']) &&
+                    request.resource.data.status == 'Wanted';
       
       allow update: if isSignedIn() && (
-        (request.auth.uid == resource.data.userId && 
-         request.resource.data.diff(resource.data).affectedKeys().hasAny(['title', 'description', 'category', 'priority', 'estimatedAmount', 'updatedAt']) && 
-         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'createdAt'])
+        (
+          request.auth.uid == resource.data.userId && 
+          resource.data.status == 'Wanted' &&
+          request.resource.data.diff(resource.data).affectedKeys().hasAny(['title', 'description', 'category', 'priority', 'updatedAt', 'status', 'claimedAt']) && 
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'createdAt', 'estimatedPointValue', 'adminNote', 'grantedAt']) &&
+          (
+            request.resource.data.status == 'Wanted' || 
+            (request.resource.data.status == 'Claimed' && resource.data.estimatedPointValue != null)
+          )
         ) ||
-        (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']))
+        (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'updatedAt', 'estimatedPointValue', 'adminNote', 'grantedAt']))
       );
       
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow delete: if isSignedIn() && request.auth.uid == resource.data.userId && resource.data.status == 'Wanted';
+    }
+
+    match /princessPoints/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /pointHistory/{historyId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /quests/{questId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin();
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'proofText', 'submittedAt', 'updatedAt']) &&
+          request.resource.data.status == 'Submitted' &&
+          resource.data.status == 'Active'
+        )
+      );
+      allow delete: if isAdmin();
     }
 
     match /dateIdeas/{dateIdeaId} {
