@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { MoneyRequest } from '../types';
 import { format } from 'date-fns';
-import { CheckCircle2, Clock, XCircle, ChevronRight, Search, Heart, Sparkles, Plus } from 'lucide-react';
+import { CheckCircle2, Clock, XCircle, ChevronRight, Search, Heart, Sparkles, Plus, Gift, CalendarHeart, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { db } from '../lib/firebase';
@@ -15,6 +15,8 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
+
+  const daysTogether = Math.floor((new Date().getTime() - new Date("2023-10-08").getTime()) / (1000 * 60 * 60 * 24));
 
   useEffect(() => {
     if (!user) return;
@@ -90,11 +92,16 @@ export default function UserDashboard() {
           <Heart size={140} fill="currentColor" />
         </div>
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-          <div>
-            <h1 className="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-2">
-              Hi, {user?.username} <Sparkles className="h-6 w-6 text-pink-500" />
-            </h1>
-            <p className="mt-2 text-base text-gray-600 font-medium">Here are all your beautiful money requests.</p>
+          <div className="flex items-center gap-6">
+            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full flex items-center justify-center font-black text-2xl sm:text-3xl shrink-0 shadow-sm border-2 bg-white/80 text-pink-500 border-white backdrop-blur-md overflow-hidden">
+              {user?.username.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div>
+              <h1 className="text-3xl font-black text-gray-800 tracking-tight flex items-center gap-2">
+                Hi, {user?.username} <Sparkles className="h-6 w-6 text-pink-500" />
+              </h1>
+              <p className="mt-2 text-base text-gray-600 font-medium">Welcome to our cute portal.</p>
+            </div>
           </div>
           <Link
             to="/request/new"
@@ -105,8 +112,51 @@ export default function UserDashboard() {
         </div>
       </motion.div>
 
+      {/* Feature Grid */}
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
+        <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 border border-pink-100 shadow-sm flex flex-col items-center text-center justify-center relative overflow-hidden group hover:bg-white transition-colors">
+          <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+            <Heart size={80} className="text-pink-500" fill="currentColor" />
+          </div>
+          <Heart className="h-8 w-8 text-pink-500 mb-3 fill-pink-500 animate-pulse" />
+          <h3 className="text-2xl font-black text-gray-800">{daysTogether}</h3>
+          <p className="text-xs font-bold text-pink-400 uppercase tracking-wider mt-1">Days Together 💖</p>
+          <span className="text-[10px] font-semibold text-gray-400 mt-1">Since Oct 8, 2023</span>
+        </div>
+
+        <Link to="/wishlist" className="bg-white/80 backdrop-blur-md rounded-3xl p-6 border border-indigo-100 shadow-sm flex flex-col items-center text-center justify-center relative overflow-hidden group hover:bg-white transition-colors">
+          <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+            <Gift size={80} className="text-indigo-500" />
+          </div>
+          <Gift className="h-8 w-8 text-indigo-500 mb-3" />
+          <h3 className="text-xl font-bold text-gray-800">Wishlist</h3>
+          <p className="text-xs font-semibold text-gray-500 mt-1">Add things you want</p>
+        </Link>
+
+        <Link to="/date-ideas" className="bg-white/80 backdrop-blur-md rounded-3xl p-6 border border-orange-100 shadow-sm flex flex-col items-center text-center justify-center relative overflow-hidden group hover:bg-white transition-colors">
+          <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+            <CalendarHeart size={80} className="text-orange-500" />
+          </div>
+          <CalendarHeart className="h-8 w-8 text-orange-500 mb-3" />
+          <h3 className="text-xl font-bold text-gray-800">Date Ideas</h3>
+          <p className="text-xs font-semibold text-gray-500 mt-1">Save cute date plans</p>
+        </Link>
+        
+        <div className="bg-gray-50/80 backdrop-blur-md rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col items-center text-center justify-center relative overflow-hidden opacity-70">
+          <Crown className="h-8 w-8 text-gray-400 mb-3" />
+          <h3 className="text-xl font-bold text-gray-500">Princess Points</h3>
+          <p className="text-xs font-bold text-purple-400 uppercase tracking-widest mt-2 bg-purple-50 px-2 py-1 rounded-md">Coming Soon</p>
+        </div>
+      </motion.div>
+
       <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-sm border border-pink-100 overflow-hidden">
         <div className="p-5 border-b border-pink-50 flex flex-col sm:flex-row gap-4 items-center justify-between bg-white/50">
+          <h2 className="text-xl font-black text-gray-800 ml-2">Money Requests</h2>
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <select
               value={statusFilter}
@@ -213,3 +263,4 @@ export default function UserDashboard() {
     </div>
   );
 }
+

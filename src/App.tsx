@@ -16,6 +16,10 @@ import UserAnalytics from './pages/UserAnalytics';
 import Notifications from './pages/Notifications';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminAnalytics from './pages/AdminAnalytics';
+import UserWishlist from './pages/UserWishlist';
+import UserDateIdeas from './pages/UserDateIdeas';
+import AdminWishlist from './pages/AdminWishlist';
+import AdminDateIdeas from './pages/AdminDateIdeas';
 
 export default function App() {
   const { user, isLoading } = useAuth();
@@ -36,6 +40,8 @@ export default function App() {
         <Route path="analytics" element={<UserAnalytics />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<UserProfile />} />
+        <Route path="wishlist" element={<UserWishlist />} />
+        <Route path="date-ideas" element={<UserDateIdeas />} />
       </Route>
 
       {/* Admin Routes */}
@@ -43,6 +49,8 @@ export default function App() {
         <Route index element={<AdminDashboard />} />
         <Route path="analytics" element={<AdminAnalytics />} />
         <Route path="profile" element={<UserProfile />} />
+        <Route path="wishlist" element={<AdminWishlist />} />
+        <Route path="date-ideas" element={<AdminDateIdeas />} />
       </Route>
     </Routes>
   );

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Coins, Heart } from 'lucide-react';
 import { auth, db } from '../lib/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -40,33 +40,22 @@ export default function Login() {
       try {
         userCredential = await signInWithEmailAndPassword(auth, email, password);
       } catch (err: any) {
-        if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-          try {
-            userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          } catch (createErr: any) {
-            setError(createErr.message || 'Failed to login or create account');
-            return;
-          }
-        } else {
-          setError(err.message || 'Failed to login');
-          return;
-        }
+        setError(err.message || 'Failed to login');
+        return;
       }
 
       // Check role to redirect
       const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
-      let role = 'User';
       if (userDoc.exists()) {
-        role = userDoc.data().role;
+        const role = userDoc.data().role;
+        if (role === 'Admin') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
-        // Fallback since onAuthStateChanged also saves this
-        role = username === 'admin' ? 'Admin' : 'User';
-      }
-
-      if (role === 'Admin') {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
+        await auth.signOut();
+        setError('User role not found. Please contact an administrator.');
       }
     } catch (err: any) {
       setError(err.message);
@@ -77,7 +66,15 @@ export default function Login() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-indigo-50 to-purple-50 p-4 overflow-hidden">
-      
+      {/* Background Image Container */}
+      <div className="absolute inset-0 z-0">
+        <div 
+          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40 mix-blend-multiply" 
+          style={{ backgroundImage: `url('${import.meta.env.BASE_URL}bg-image.png')` }} 
+        />
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px]" />
+      </div>
+
       {/* Animated Floating Hearts Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {hearts.map((heart) => (

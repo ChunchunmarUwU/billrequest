@@ -117,19 +117,20 @@ export default function UserProfile() {
         )}
         <div className="p-8 sm:p-10 flex flex-col sm:flex-row items-center sm:items-start gap-8 relative z-10 text-center sm:text-left">
           <div className={cn(
-            "h-24 w-24 rounded-full flex items-center justify-center font-black text-4xl shrink-0 shadow-sm",
-            isAdmin ? "bg-indigo-600 text-white" : "bg-white/80 text-pink-500 border-2 border-white backdrop-blur-md"
+            "h-24 w-24 rounded-full flex items-center justify-center font-black text-4xl shrink-0 shadow-sm overflow-hidden border-2",
+            isAdmin ? "bg-indigo-600 text-white border-white" : "bg-white text-pink-500 border-white backdrop-blur-md"
           )}>
             {user?.username.charAt(0).toUpperCase() || 'U'}
           </div>
-          <div className="flex-1 flex flex-col justify-center h-full pt-2">
+          <div className="flex-1 flex flex-col justify-center h-full pt-2 w-full">
             <h2 className={cn(
               "text-3xl font-black tracking-tight flex items-center justify-center sm:justify-start gap-3",
               isAdmin ? "text-gray-900" : "text-gray-800"
             )}>
               {user?.username} {!isAdmin && <Sparkles className="h-6 w-6 text-pink-400" />}
             </h2>
-            <div className="mt-3 flex items-center justify-center sm:justify-start gap-6 text-sm font-bold">
+
+            <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6 text-sm font-bold w-full">
               <span className={cn(
                 "flex items-center gap-1.5 uppercase tracking-widest",
                 isAdmin ? "text-gray-500" : "text-indigo-400"

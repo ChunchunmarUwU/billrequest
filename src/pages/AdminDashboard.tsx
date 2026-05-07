@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { MoneyRequest } from '../types';
 import { format } from 'date-fns';
-import { CheckCircle2, XCircle, Search, Clock, ArrowRight, AlertCircle, FileText, Download, Briefcase } from 'lucide-react';
+import { CheckCircle2, XCircle, Search, Clock, ArrowRight, AlertCircle, FileText, Download, Briefcase, Heart } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { db } from '../lib/firebase';
 import { collection, query, orderBy, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
@@ -19,6 +19,8 @@ export default function AdminDashboard() {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  const daysTogether = Math.floor((new Date().getTime() - new Date("2023-10-08").getTime()) / (1000 * 60 * 60 * 24));
   
   useEffect(() => {
     setCurrentPage(1);
@@ -177,10 +179,10 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Header & Filters */}
-      <div className="bg-white rounded-[2rem] shadow-sm border border-gray-200 p-6 sm:p-8 flex flex-col xl:flex-row gap-6 justify-between items-center z-10 mb-8">
-        <div className="self-start xl:self-auto flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+      {/* Days Together & Header Section */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 z-10 mb-8">
+        <div className="md:col-span-3 bg-white rounded-[2rem] shadow-sm border border-gray-200 p-6 sm:p-8 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
             <Briefcase className="h-6 w-6" />
           </div>
           <div>
@@ -188,8 +190,20 @@ export default function AdminDashboard() {
             <p className="text-sm font-medium text-gray-500">Manage and review incoming requests.</p>
           </div>
         </div>
-        
-        <div className="flex w-full xl:w-auto flex-col sm:flex-row items-center gap-4">
+
+        <div className="md:col-span-1 bg-white rounded-[2rem] shadow-sm border border-pink-100 p-6 flex flex-col items-center justify-center relative overflow-hidden group">
+          <div className="absolute opacity-5 -right-4 -top-4">
+             <Heart size={80} className="text-pink-500" fill="currentColor" />
+          </div>
+          <Heart className="h-6 w-6 text-pink-500 mb-2 fill-pink-500" />
+          <h3 className="text-2xl font-black text-gray-800">{daysTogether}</h3>
+          <p className="text-[10px] font-bold text-pink-500 uppercase tracking-wider mt-1">Days Together</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-[2rem] shadow-sm border border-gray-200 p-6 flex flex-col sm:flex-row gap-4 justify-between items-center z-10">
+        <div className="flex w-full flex-col sm:flex-row items-center gap-4">
           <div className="relative w-full sm:w-64">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
               <Search className="h-4 w-4 text-gray-400" />
@@ -220,7 +234,7 @@ export default function AdminDashboard() {
           
           <button
             onClick={exportToCSV}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-gray-800 transition-colors focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+            className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-gray-800 transition-colors focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
           >
             <Download className="h-4 w-4" /> Export
           </button>

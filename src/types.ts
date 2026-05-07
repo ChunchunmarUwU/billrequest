@@ -26,3 +26,31 @@ export interface Notification {
   is_read: boolean;
   created_at: number;
 }
+
+export interface WishlistItem {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  category: 'Gift' | 'Food' | 'Date' | 'Shopping' | 'Beauty' | 'Experience' | 'Other';
+  priority: 'Low' | 'Medium' | 'High' | 'Dream';
+  estimatedAmount?: number;
+  status: 'Wanted' | 'Planned' | 'Done' | 'Hidden Surprise';
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface DateIdea {
+  id: string;
+  title: string;
+  description?: string;
+  category: 'Movie Night' | 'Food Date' | 'Coffee Date' | 'Walk' | 'Gaming' | 'Cooking Together' | 'Shopping' | 'Surprise' | 'Home Date' | 'Outdoor' | 'Other';
+  location?: string;
+  estimatedCost?: number;
+  mood: 'Cozy' | 'Fun' | 'Romantic' | 'Chill' | 'Fancy' | 'Lazy' | 'Adventure';
+  createdBy: string;
+  isFavorite: boolean;
+  status: 'Idea' | 'Planned' | 'Done';
+  createdAt: number;
+  updatedAt: number;
+}

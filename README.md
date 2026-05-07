@@ -21,3 +21,7 @@ To use the application, you need to manually bootstrap the users using the Login
 Firebase Configuration is controlled by `firebase-applet-config.json` and handled automatically by AI Studio.
 
 If you are modifying security rules, ensure you test them using `npm run lint`.
+
+## Security Warnings
+
+**CRITICAL:** Never commit any `.env` files, private API keys, or service account files to this repository. The `firebase-applet-config.json` provided with the applet only contains public keys meant to be accessible to the frontend client. Any administrative or private keys should be loaded securely and never checked into source control.

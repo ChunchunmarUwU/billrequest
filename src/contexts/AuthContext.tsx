@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../lib/firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 type User = {
   id: string;
@@ -21,42 +21,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    let unsubscribeSnapshot: (() => void) | undefined;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        // Fetch or prepare user document
         try {
           const userDocRef = doc(db, 'users', firebaseUser.uid);
-          const userDoc = await getDoc(userDocRef);
-          
-          if (userDoc.exists()) {
-            setUser({
-              id: firebaseUser.uid,
-              username: userDoc.data().username,
-              role: userDoc.data().role as 'Admin' | 'User'
-            });
-          } else {
-            // First time seeding this user in DB
-            const isGunj = firebaseUser.email === 'gunj@app.local';
-            const role = isGunj ? 'User' : 'Admin';
-            const username = isGunj ? 'gunj' : 'admin';
-            
-            await setDoc(userDocRef, {
-              email: firebaseUser.email,
-              username: username,
-              role: role
-            });
-            setUser({ id: firebaseUser.uid, username, role });
-          }
+          unsubscribeSnapshot = onSnapshot(userDocRef, (userDoc) => {
+            if (userDoc.exists()) {
+              setUser({
+                id: firebaseUser.uid,
+                username: userDoc.data().username,
+                role: userDoc.data().role as 'Admin' | 'User'
+              });
+            } else {
+              console.error('User record not found in database. Signing out.');
+              auth.signOut();
+              setUser(null);
+            }
+            setIsLoading(false);
+          }, (error) => {
+            console.error("Error subscribing to user data", error);
+            setIsLoading(false);
+          });
         } catch (error) {
-          console.error("Error fetching user data", error);
+          console.error("Error setting up user listener", error);
+          setIsLoading(false);
         }
       } else {
+        if (unsubscribeSnapshot) {
+          unsubscribeSnapshot();
+          unsubscribeSnapshot = undefined;
+        }
         setUser(null);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+      }
+    };
   }, []);
 
   return (
