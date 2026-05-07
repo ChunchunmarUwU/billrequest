@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { WishlistItem, PrincessPoints } from '../types';
 import { db } from '../lib/firebase';
 import { collection, query, orderBy, getDocs, updateDoc, doc, addDoc, getDoc, setDoc } from 'firebase/firestore';

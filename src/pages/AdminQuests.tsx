@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Quest, PrincessPoints, PointHistory } from '../types';
 import { db } from '../lib/firebase';
