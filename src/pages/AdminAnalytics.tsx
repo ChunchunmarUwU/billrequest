@@ -172,9 +172,9 @@ export default function AdminAnalytics() {
   }, [user]);
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center p-24 text-gray-500 bg-white rounded-[2rem] shadow-sm border border-gray-100 max-w-6xl mx-auto">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-100 border-t-indigo-600 mb-6" />
-      <span className="font-bold uppercase tracking-widest text-xs">Loading analytics...</span>
+    <div className="flex flex-col items-center justify-center p-24 text-gray-500 bg-white rounded-[2.5rem] shadow-sm border border-gray-100 max-w-6xl mx-auto">
+      <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-100/50 border-t-indigo-500 mb-6 drop-shadow-sm" />
+      <span className="font-bold uppercase tracking-widest text-[10px]">Loading analytics...</span>
     </div>
   );
   if (!data) return null;
@@ -231,111 +231,111 @@ export default function AdminAnalytics() {
   const urgencyChartMax = getChartMax(data.urgencyStats.map((item: any) => item.total));
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-12">
-      <div className="bg-white rounded-[2rem] shadow-sm border border-gray-200 p-6 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+    <div className="space-y-8 max-w-6xl mx-auto pb-12 font-sans relative">
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 p-8 flex flex-col xl:flex-row xl:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="flex items-center gap-5 relative z-10">
+          <div className="h-12 w-12 rounded-2xl bg-indigo-50 border border-indigo-100/50 text-indigo-600 flex items-center justify-center shrink-0 shadow-inner">
             <BarChart3 className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="text-2xl font-black tracking-tight text-gray-900">Analytics</h2>
-            <p className="text-sm font-medium text-gray-500">Global insights and request metrics.</p>
+            <h2 className="text-3xl font-black tracking-tight text-gray-800">Analytics</h2>
+            <p className="text-sm font-bold text-gray-500 mt-1">Global insights and metrics.</p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-4 xl:justify-end shrink-0">
-          <div className="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 min-w-[120px]">
-             <p className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest mb-0.5">Approval Rate</p>
-             <p className="text-lg font-black text-gray-900">{data.approvalRate}%</p>
+        <div className="flex flex-wrap gap-4 xl:justify-end shrink-0 relative z-10">
+          <div className="bg-gray-50 px-5 py-3 rounded-2xl border border-gray-100 shadow-sm min-w-[120px]">
+             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Approval Rate</p>
+             <p className="text-xl font-black text-gray-800 tracking-tight">{data.approvalRate}%</p>
           </div>
-          <div className="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 min-w-[120px]">
-             <p className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest mb-0.5">Avg Request</p>
-             <p className="text-lg font-black text-gray-900">{data.avgAmount.toLocaleString()} ₮</p>
+          <div className="bg-gray-50 px-5 py-3 rounded-2xl border border-gray-100 shadow-sm min-w-[120px]">
+             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Avg Request</p>
+             <p className="text-xl font-black text-gray-800 tracking-tight">{data.avgAmount.toLocaleString()} ₮</p>
           </div>
-          <div className="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 min-w-[120px]">
-             <p className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest mb-0.5">Total Requests</p>
-             <p className="text-lg font-black text-gray-900">{data.totalRequests}</p>
+          <div className="bg-gray-50 px-5 py-3 rounded-2xl border border-gray-100 shadow-sm min-w-[120px]">
+             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Total Requests</p>
+             <p className="text-xl font-black text-gray-800 tracking-tight">{data.totalRequests}</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div className="p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-gray-200 bg-white shadow-sm flex flex-col justify-between">
+        <div className="p-6 rounded-[2rem] border border-gray-100 bg-white shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all">
           <div>
-            <dt className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Requested</dt>
-            <dd className="text-xl sm:text-3xl font-black tracking-tight text-gray-900">
-              {Math.round(data.totalRequested).toLocaleString()} <span className="text-[10px] sm:text-sm text-gray-400">₮</span>
+            <dt className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Total Requested</dt>
+            <dd className="text-2xl sm:text-3xl font-black tracking-tight text-gray-800">
+              {Math.round(data.totalRequested).toLocaleString()} <span className="text-sm text-gray-400 font-bold">₮</span>
             </dd>
           </div>
         </div>
-        <div className="p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-emerald-100 bg-emerald-50/50 shadow-sm flex flex-col justify-between">
+        <div className="p-6 rounded-[2rem] border border-emerald-100 bg-emerald-50 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all">
           <div>
-            <dt className="text-[10px] sm:text-xs font-black text-emerald-600/70 uppercase tracking-widest mb-1">Total Approved</dt>
-            <dd className="text-xl sm:text-3xl font-black tracking-tight text-emerald-700">
-              {Math.round(data.totalApproved).toLocaleString()} <span className="text-[10px] sm:text-sm text-emerald-500">₮</span>
+            <dt className="text-[10px] sm:text-xs font-black text-emerald-500 uppercase tracking-widest mb-2">Total Approved</dt>
+            <dd className="text-2xl sm:text-3xl font-black tracking-tight text-emerald-700">
+              {Math.round(data.totalApproved).toLocaleString()} <span className="text-sm text-emerald-400 font-bold">₮</span>
             </dd>
           </div>
-          <p className="text-[10px] sm:text-sm font-bold text-emerald-600 mt-4">{data.approvedCount} approved</p>
+          <p className="text-xs font-bold text-emerald-500 mt-4 bg-emerald-100/50 w-fit px-2 py-1 rounded-md">{data.approvedCount} approved</p>
         </div>
-        <div className="p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-amber-100 bg-amber-50/50 shadow-sm flex flex-col justify-between">
+        <div className="p-6 rounded-[2rem] border border-amber-100 bg-amber-50 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all">
           <div>
-            <dt className="text-[10px] sm:text-xs font-black text-amber-600/70 uppercase tracking-widest mb-1">Total Pending</dt>
-            <dd className="text-xl sm:text-3xl font-black tracking-tight text-amber-700">
-              {Math.round(data.totalPending).toLocaleString()} <span className="text-[10px] sm:text-sm text-amber-500">₮</span>
+            <dt className="text-[10px] sm:text-xs font-black text-amber-500 uppercase tracking-widest mb-2">Total Pending</dt>
+            <dd className="text-2xl sm:text-3xl font-black tracking-tight text-amber-700">
+              {Math.round(data.totalPending).toLocaleString()} <span className="text-sm text-amber-400 font-bold">₮</span>
             </dd>
           </div>
-          <p className="text-[10px] sm:text-sm font-bold text-amber-600 mt-4">{data.pendingCount} pending</p>
+          <p className="text-xs font-bold text-amber-500 mt-4 bg-amber-100/50 w-fit px-2 py-1 rounded-md">{data.pendingCount} pending</p>
         </div>
-        <div className="p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-rose-100 bg-rose-50/50 shadow-sm flex flex-col justify-between">
+        <div className="p-6 rounded-[2rem] border border-rose-100 bg-rose-50 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all">
           <div>
-            <dt className="text-[10px] sm:text-xs font-black text-rose-600/70 uppercase tracking-widest mb-1">Total Rejected</dt>
-            <dd className="text-xl sm:text-3xl font-black tracking-tight text-rose-700">
-              {Math.round(data.totalRejected).toLocaleString()} <span className="text-[10px] sm:text-sm text-rose-500">₮</span>
+            <dt className="text-[10px] sm:text-xs font-black text-rose-500 uppercase tracking-widest mb-2">Total Rejected</dt>
+            <dd className="text-2xl sm:text-3xl font-black tracking-tight text-rose-700">
+              {Math.round(data.totalRejected).toLocaleString()} <span className="text-sm text-rose-400 font-bold">₮</span>
             </dd>
           </div>
-          <p className="text-[10px] sm:text-sm font-bold text-rose-600 mt-4">{data.rejectedCount} rejected</p>
+          <p className="text-xs font-bold text-rose-500 mt-4 bg-rose-100/50 w-fit px-2 py-1 rounded-md">{data.rejectedCount} rejected</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-indigo-50 border border-indigo-100 rounded-[2rem] p-6 sm:p-8 relative overflow-hidden flex flex-col justify-center">
+        <div className="bg-sky-50 border border-sky-100 rounded-[2rem] p-6 sm:p-8 relative overflow-hidden flex flex-col justify-center">
           <div className="relative z-10">
-            <h3 className="text-xs sm:text-sm font-black text-indigo-400 uppercase tracking-widest mb-2">Most Expensive Category</h3>
-            <p className="text-2xl sm:text-3xl font-black text-indigo-900">{data.mostExpensiveCat}</p>
+            <h3 className="text-[10px] font-bold text-sky-600 uppercase tracking-widest mb-2">Most Expensive Category</h3>
+            <p className="text-3xl font-black text-sky-900">{data.mostExpensiveCat}</p>
           </div>
-          <TrendingUp className="absolute right-[-2rem] bottom-[-2rem] w-32 h-32 text-indigo-100 opacity-50" />
+          <TrendingUp className="absolute right-[-2rem] bottom-[-2rem] w-40 h-40 text-sky-100 pointer-events-none" />
         </div>
-        <div className="bg-pink-50 border border-pink-100 rounded-[2rem] p-6 sm:p-8 relative overflow-hidden flex flex-col justify-center">
+        <div className="bg-amber-50 border border-amber-100 rounded-[2rem] p-6 sm:p-8 relative overflow-hidden flex flex-col justify-center">
           <div className="relative z-10">
-            <h3 className="text-xs sm:text-sm font-black text-pink-400 uppercase tracking-widest mb-2">Most Common Category</h3>
-            <p className="text-2xl sm:text-3xl font-black text-pink-900">{data.mostCommonCat}</p>
+            <h3 className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-2">Most Common Category</h3>
+            <p className="text-3xl font-black text-amber-900">{data.mostCommonCat}</p>
           </div>
-          <BarChart3 className="absolute right-[-2rem] bottom-[-2rem] w-32 h-32 text-pink-100 opacity-50" />
+          <BarChart3 className="absolute right-[-2rem] bottom-[-2rem] w-40 h-40 text-amber-100 pointer-events-none" />
         </div>
       </div>
 
       {data.pendingCount > 0 && (
-        <div className="bg-white rounded-[2rem] shadow-sm border border-orange-200 overflow-hidden">
-          <div className="bg-orange-50 px-6 py-4 border-b border-orange-100 flex items-center gap-3">
-            <AlertTriangle className="h-5 w-5 text-orange-500" />
-            <h3 className="text-lg font-black text-orange-900">Needs Attention</h3>
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-amber-200 overflow-hidden">
+          <div className="bg-amber-50 px-8 py-5 border-b border-amber-100 flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 drop-shadow-sm" />
+            <h3 className="text-lg font-black text-amber-900 tracking-tight">Needs Attention</h3>
           </div>
-          <div className="p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="p-8 grid grid-cols-2 md:grid-cols-4 gap-6">
             <div>
-              <p className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">High Urgency</p>
-              <p className="text-xl sm:text-2xl font-black text-gray-900">{data.highUrgencyPending}</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">High Urgency</p>
+              <p className="text-2xl font-black text-gray-800">{data.highUrgencyPending}</p>
             </div>
             <div>
-              <p className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Emergency</p>
-              <p className="text-xl sm:text-2xl font-black text-red-600">{data.emergencyPending}</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Emergency</p>
+              <p className="text-2xl font-black text-rose-600">{data.emergencyPending}</p>
             </div>
             <div className="col-span-2 md:col-span-1">
-              <p className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Oldest Pending</p>
-              <p className="text-base sm:text-lg font-bold text-gray-900">
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Oldest Pending</p>
+              <p className="text-lg font-black text-gray-800">
                 {data.oldestPendingTime ? formatDistanceToNow(data.oldestPendingTime, { addSuffix: true }) : 'N/A'}
               </p>
             </div>
             <div className="col-span-2 md:col-span-1 flex items-center md:justify-end">
-              <Link to="/admin" className="inline-flex items-center gap-2 bg-orange-100 hover:bg-orange-200 text-orange-800 px-6 py-3 rounded-xl font-bold transition-colors w-full md:w-auto justify-center">
+              <Link to="/admin" className="inline-flex items-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-800 px-6 py-3.5 rounded-2xl font-bold transition-all w-full md:w-auto justify-center shadow-sm">
                 Review Requests <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -344,75 +344,75 @@ export default function AdminAnalytics() {
       )}
 
       {/* User Sensitivity Section */}
-      <div className="bg-white rounded-[2rem] shadow-sm border border-gray-200 overflow-hidden">
-         <div className="px-6 py-6 sm:px-8 border-b border-gray-100 flex items-center justify-between">
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden relative">
+         <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between relative z-10">
             <div>
-               <h3 className="text-lg font-black text-gray-900">User Sensitivity to Financial State</h3>
-               <p className="text-sm font-medium text-gray-500 mt-1">Do users ask for less when the network's financial state is Bad?</p>
+               <h3 className="text-xl font-black text-gray-800 tracking-tight">Financial Empathy</h3>
+               <p className="text-sm font-bold text-gray-500 mt-1">Do users ask for less when finances are tight?</p>
             </div>
          </div>
-         <div className="p-6 sm:p-8">
+         <div className="p-8 relative z-10">
             {data.sensitivityScore === null ? (
-               <div className="text-center py-10">
-                  <p className="text-gray-500 font-medium h-fit">Not enough data to measure sensitivity yet.</p>
-                  <p className="text-sm text-gray-400 mt-1">Both "GOOD" and "Bad" states require at least 2 requests to appear.</p>
+               <div className="text-center py-12 border border-dashed border-gray-200 rounded-[2rem] bg-gray-50">
+                  <p className="text-gray-500 font-bold h-fit">Insufficient data.</p>
+                  <p className="text-xs text-gray-400 mt-2">Requires at least 2 requests in Good and Bad states.</p>
                </div>
             ) : (
                <div className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                     <div className="p-6 rounded-[1.5rem] border border-cyan-100 bg-cyan-50/50 shadow-sm flex flex-col justify-center">
-                        <p className="text-[10px] sm:text-xs font-black text-cyan-600 uppercase tracking-widest mb-1">Sensitivity Score</p>
-                        <p className="text-2xl sm:text-3xl font-black text-cyan-900">{data.sensitivityScore}%</p>
-                        <p className="text-xs text-cyan-600/70 mt-2 font-medium">
-                           Request behavior appears to decrease by {data.sensitivityScore}% when financial state is Bad.
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
+                     <div className="p-6 rounded-[2rem] border border-teal-200 bg-teal-50 shadow-sm flex flex-col justify-center">
+                        <p className="text-[10px] sm:text-xs font-bold text-teal-600 uppercase tracking-widest mb-2">Empathy Score</p>
+                        <p className="text-3xl font-black text-teal-800">{data.sensitivityScore}%</p>
+                        <p className="text-[10px] text-teal-600/70 mt-2 font-bold uppercase tracking-wider leading-relaxed">
+                           Demands decrease by {data.sensitivityScore}% during low funds.
                         </p>
                      </div>
-                     <div className="p-5 rounded-2xl border border-gray-100 bg-gray-50/50">
-                        <p className="text-[10px] font-black text-green-700 uppercase tracking-widest mb-1">When GOOD</p>
-                        <p className="text-lg font-black text-gray-900">{Math.round(data.sensitivityData.GOOD.avg).toLocaleString()} ₮ <span className="text-[10px] text-gray-500 font-bold uppercase ml-1">Avg</span></p>
-                        <p className="text-sm font-black text-gray-500">{Math.round(data.sensitivityData.GOOD.median).toLocaleString()} ₮ <span className="text-[10px] text-gray-400">Med.</span></p>
-                        <p className="text-[10px] text-gray-400 font-bold mt-2">{data.sensitivityData.GOOD.count} requests</p>
+                     <div className="p-6 rounded-[2rem] border border-gray-100 bg-white shadow-sm">
+                        <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-2">Funds are Good</p>
+                        <p className="text-xl font-black text-gray-800 truncate">{Math.round(data.sensitivityData.GOOD.avg).toLocaleString()} ₮ <span className="text-[10px] text-gray-400 font-bold uppercase ml-1">Avg</span></p>
+                        <p className="text-sm font-bold text-gray-500 mt-0.5">{Math.round(data.sensitivityData.GOOD.median).toLocaleString()} ₮ <span className="text-[10px] text-gray-400">Med.</span></p>
+                        <p className="text-[10px] text-emerald-700 font-bold mt-3 bg-emerald-50 w-fit px-2 py-1 rounded-md">{data.sensitivityData.GOOD.count} requests</p>
                      </div>
-                     <div className="p-5 rounded-2xl border border-gray-100 bg-gray-50/50">
-                        <p className="text-[10px] font-black text-orange-700 uppercase tracking-widest mb-1">When Okay</p>
-                        <p className="text-lg font-black text-gray-900">{Math.round(data.sensitivityData.Okay.avg).toLocaleString()} ₮ <span className="text-[10px] text-gray-500 font-bold uppercase ml-1">Avg</span></p>
-                        <p className="text-sm font-black text-gray-500">{Math.round(data.sensitivityData.Okay.median).toLocaleString()} ₮ <span className="text-[10px] text-gray-400">Med.</span></p>
-                        <p className="text-[10px] text-gray-400 font-bold mt-2">{data.sensitivityData.Okay.count} requests</p>
+                     <div className="p-6 rounded-[2rem] border border-gray-100 bg-white shadow-sm">
+                        <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-2">Funds are Okay</p>
+                        <p className="text-xl font-black text-gray-800 truncate">{Math.round(data.sensitivityData.Okay.avg).toLocaleString()} ₮ <span className="text-[10px] text-gray-400 font-bold uppercase ml-1">Avg</span></p>
+                        <p className="text-sm font-bold text-gray-500 mt-0.5">{Math.round(data.sensitivityData.Okay.median).toLocaleString()} ₮ <span className="text-[10px] text-gray-400">Med.</span></p>
+                        <p className="text-[10px] text-amber-700 font-bold mt-3 bg-amber-50 w-fit px-2 py-1 rounded-md">{data.sensitivityData.Okay.count} requests</p>
                      </div>
-                     <div className="p-5 rounded-2xl border border-gray-100 bg-gray-50/50">
-                        <p className="text-[10px] font-black text-red-700 uppercase tracking-widest mb-1">When Bad</p>
-                        <p className="text-lg font-black text-gray-900">{Math.round(data.sensitivityData.Bad.avg).toLocaleString()} ₮ <span className="text-[10px] text-gray-500 font-bold uppercase ml-1">Avg</span></p>
-                        <p className="text-sm font-black text-gray-500">{Math.round(data.sensitivityData.Bad.median).toLocaleString()} ₮ <span className="text-[10px] text-gray-400">Med.</span></p>
-                        <p className="text-[10px] text-gray-400 font-bold mt-2">{data.sensitivityData.Bad.count} requests</p>
+                     <div className="p-6 rounded-[2rem] border border-gray-100 bg-white shadow-sm">
+                        <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest mb-2">Funds are Low</p>
+                        <p className="text-xl font-black text-gray-800 truncate">{Math.round(data.sensitivityData.Bad.avg).toLocaleString()} ₮ <span className="text-[10px] text-gray-400 font-bold uppercase ml-1">Avg</span></p>
+                        <p className="text-sm font-bold text-gray-500 mt-0.5">{Math.round(data.sensitivityData.Bad.median).toLocaleString()} ₮ <span className="text-[10px] text-gray-400">Med.</span></p>
+                        <p className="text-[10px] text-rose-700 font-bold mt-3 bg-rose-50 w-fit px-2 py-1 rounded-md">{data.sensitivityData.Bad.count} requests</p>
                      </div>
                   </div>
 
-                  <div className="h-64 mt-8">
+                  <div className="h-72 mt-10">
                      <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={data.financialStats} margin={{top: 20, right: 24, left: 32, bottom: 0}}>
-                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                           <XAxis dataKey="state" fontSize={11} tickLine={false} axisLine={false} tick={{fill: '#6b7280', fontWeight: 700}} />
+                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                           <XAxis dataKey="state" fontSize={11} tickLine={false} axisLine={false} tick={{fill: '#64748b', fontWeight: 800}} />
                            <YAxis 
                              domain={[0, financialChartMax]}
                              width={80}
                              fontSize={11} 
                              tickLine={false} 
                              axisLine={false} 
-                             tick={{fill: '#9ca3af', fontWeight: 600}} 
+                             tick={{fill: '#94a3b8', fontWeight: 700}} 
                              tickFormatter={formatCompactMNT} 
                            />
                            <RechartsTooltip 
-                           cursor={{ fill: '#f1f5f9' }} 
+                           cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }} 
                            content={({ active, payload }) => {
                               if (active && payload && payload.length) {
                                  const d = payload[0].payload;
                                  return (
-                                 <div className="bg-white p-3 border border-gray-200 shadow-xl rounded-xl">
-                                    <p className="font-bold text-gray-900 mb-1">State: {d.state}</p>
-                                    <p className="text-cyan-600 font-black text-lg">{d.avg.toLocaleString()} ₮ (Avg)</p>
-                                    <div className="text-xs text-gray-500 mt-1 space-y-1">
+                                 <div className="bg-white p-4 border border-gray-100 shadow-lg rounded-3xl">
+                                    <p className="font-black text-gray-800 mb-1 tracking-tight">State: {d.state}</p>
+                                    <p className="text-indigo-500 font-black text-xl">{d.avg.toLocaleString()} ₮ <span className="text-xs text-gray-400">Avg</span></p>
+                                    <div className="text-[10px] font-bold text-gray-500 mt-3 space-y-1 uppercase tracking-widest">
                                        <p>Total requests: {d.count}</p>
-                                       <p>Total amount: {d.total.toLocaleString()} ₮</p>
+                                       <p>Total cost: {d.total.toLocaleString()} ₮</p>
                                     </div>
                                  </div>
                                  );
@@ -420,7 +420,13 @@ export default function AdminAnalytics() {
                               return null;
                            }}
                            />
-                           <Bar dataKey="avg" fill="#06b6d4" radius={[8, 8, 0, 0]} name="Average Request Amount" />
+                           <Bar dataKey="avg" fill="url(#cyanGradient)" radius={[12, 12, 0, 0]} name="Average Request Amount" />
+                           <defs>
+                             <linearGradient id="cyanGradient" x1="0" y1="0" x2="0" y2="1">
+                               <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.8}/>
+                               <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0.8}/>
+                             </linearGradient>
+                           </defs>
                         </BarChart>
                      </ResponsiveContainer>
                   </div>
@@ -430,8 +436,8 @@ export default function AdminAnalytics() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-gray-200">
-          <h3 className="text-xs font-black text-gray-400 mb-6 uppercase tracking-widest">Request Statuses</h3>
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+          <h3 className="text-[10px] font-bold text-gray-400 mb-6 uppercase tracking-widest">Statuses</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -439,8 +445,8 @@ export default function AdminAnalytics() {
                   data={statusData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={65}
-                  outerRadius={90}
+                  innerRadius={70}
+                  outerRadius={95}
                   paddingAngle={5}
                   dataKey="value"
                   stroke="none"
@@ -456,42 +462,42 @@ export default function AdminAnalytics() {
                     name
                   ]} 
                 />
-                <Legend />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#78716c' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-gray-200">
-          <h3 className="text-xs font-black text-gray-400 mb-6 uppercase tracking-widest">Category Spending</h3>
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+          <h3 className="text-[10px] font-bold text-gray-400 mb-6 uppercase tracking-widest">Cost by Category</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={formattedCategory} margin={{top: 20, right: 24, left: 32, bottom: 0}}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} tick={{fill: '#6b7280', fontWeight: 700}} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f5f5f4" />
+                <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} tick={{fill: '#78716c', fontWeight: 800}} />
                 <YAxis 
                   domain={[0, categoryChartMax]}
                   width={80}
                   fontSize={11} 
                   tickLine={false} 
                   axisLine={false} 
-                  tick={{fill: '#9ca3af', fontWeight: 600}} 
+                  tick={{fill: '#a8a29e', fontWeight: 700}} 
                   tickFormatter={formatCompactMNT} 
                 />
                 <RechartsTooltip 
-                  cursor={{ fill: '#f1f5f9' }} 
+                  cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }} 
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div className="bg-white p-3 border border-gray-200 shadow-xl rounded-xl">
-                          <p className="font-bold text-gray-900 mb-1">{data.name}</p>
-                          <p className="text-indigo-600 font-black text-lg">{data.Total.toLocaleString()} ₮</p>
-                          <div className="text-xs text-gray-500 mt-2 space-y-1">
-                            <p>Total requests: {data.Count}</p>
-                            <p className="text-emerald-600">Approved: {data.approved}</p>
-                            <p className="text-amber-600">Pending: {data.pending}</p>
-                            <p className="text-rose-600">Rejected: {data.rejected}</p>
+                        <div className="bg-white p-4 border border-gray-100 shadow-lg rounded-3xl">
+                          <p className="font-black text-gray-800 mb-1 tracking-tight">{data.name}</p>
+                          <p className="text-indigo-500 font-black text-xl">{data.Total.toLocaleString()} ₮</p>
+                          <div className="text-[10px] uppercase font-bold tracking-widest text-gray-500 mt-3 space-y-1">
+                            <p>Requests: {data.Count}</p>
+                            <p className="text-emerald-500">Approved: {data.approved}</p>
+                            <p className="text-amber-500">Pending: {data.pending}</p>
+                            <p className="text-rose-500">Rejected: {data.rejected}</p>
                           </div>
                         </div>
                       );
@@ -499,75 +505,91 @@ export default function AdminAnalytics() {
                     return null;
                   }}
                 />
-                <Bar dataKey="Total" fill="#6366f1" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="Total" fill="url(#indigoGradient)" radius={[12, 12, 0, 0]} />
+                <defs>
+                   <linearGradient id="indigoGradient" x1="0" y1="0" x2="0" y2="1">
+                     <stop offset="5%" stopColor="#818cf8" stopOpacity={0.8}/>
+                     <stop offset="95%" stopColor="#6366f1" stopOpacity={0.8}/>
+                   </linearGradient>
+                </defs>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-gray-200 lg:col-span-2">
-           <h3 className="text-xs font-black text-gray-400 mb-6 uppercase tracking-widest">Monthly Trend</h3>
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 lg:col-span-2">
+           <h3 className="text-[10px] font-bold text-gray-400 mb-6 uppercase tracking-widest">Monthly Trends</h3>
            <div className="h-72 flex flex-col justify-center">
              {formattedMonthly.length <= 1 ? (
-               <div className="text-center">
-                 <p className="text-gray-500 font-medium">Not enough monthly data to show a trend yet.</p>
-                 <p className="text-sm text-gray-400 mt-1">Keep using the app to see your history!</p>
+               <div className="text-center py-10 border border-dashed border-gray-200 rounded-[2rem] bg-gray-50">
+                 <p className="text-gray-500 font-bold">Not enough history.</p>
+                 <p className="text-xs text-gray-400 mt-2">More time needed to show trends.</p>
                </div>
              ) : (
                <ResponsiveContainer width="100%" height="100%">
                  <LineChart data={formattedMonthly} margin={{top: 20, right: 24, left: 32, bottom: 0}}>
-                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                   <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} tick={{fill: '#6b7280', fontWeight: 700}} />
+                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f5f5f4" />
+                   <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} tick={{fill: '#78716c', fontWeight: 800}} />
                    <YAxis 
                      domain={[0, monthlyChartMax]}
                      width={80}
                      fontSize={11} 
                      tickLine={false} 
                      axisLine={false} 
-                     tick={{fill: '#9ca3af', fontWeight: 600}} 
+                     tick={{fill: '#a8a29e', fontWeight: 700}} 
                      tickFormatter={formatCompactMNT} 
                    />
-                   <RechartsTooltip formatter={(val: number) => [`${val.toLocaleString()} ₮`, 'Total Requested']} />
-                   <Line type="monotone" dataKey="Total" stroke="#6366f1" strokeWidth={4} dot={{ r: 5, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 8 }} />
+                   <RechartsTooltip 
+                     contentStyle={{ borderRadius: '16px', border: '1px solid #f3f4f6', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                     itemStyle={{ fontWeight: 'bold' }}
+                     formatter={(val: number) => [`${val.toLocaleString()} ₮`, 'Cost']} 
+                   />
+                   <Line type="monotone" dataKey="Total" stroke="#14b8a6" strokeWidth={4} dot={{ r: 5, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 8, fill: '#14b8a6', stroke: '#fff', strokeWidth: 3 }} />
                  </LineChart>
                </ResponsiveContainer>
              )}
            </div>
         </div>
 
-        <div className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-gray-200 lg:col-span-2">
-          <h3 className="text-xs font-black text-gray-400 mb-6 uppercase tracking-widest">Urgency Breakdown</h3>
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 lg:col-span-2">
+          <h3 className="text-[10px] font-bold text-gray-400 mb-6 uppercase tracking-widest">Urgency Breakdown</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.urgencyStats} margin={{top: 20, right: 24, left: 32, bottom: 0}}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="urgency" fontSize={11} tickLine={false} axisLine={false} tick={{fill: '#6b7280', fontWeight: 700}} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f5f5f4" />
+                <XAxis dataKey="urgency" fontSize={11} tickLine={false} axisLine={false} tick={{fill: '#78716c', fontWeight: 800}} />
                 <YAxis 
                   domain={[0, urgencyChartMax]}
                   width={80}
                   fontSize={11} 
                   tickLine={false} 
                   axisLine={false} 
-                  tick={{fill: '#9ca3af', fontWeight: 600}} 
+                  tick={{fill: '#a8a29e', fontWeight: 700}} 
                   tickFormatter={formatCompactMNT} 
                 />
                 <RechartsTooltip 
-                  cursor={{ fill: '#f1f5f9' }} 
+                  cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }} 
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const d = payload[0].payload;
                       return (
-                        <div className="bg-white p-3 border border-gray-200 shadow-xl rounded-xl">
-                          <p className="font-bold text-gray-900 mb-1">Urgency: {d.urgency}</p>
-                          <p className="text-indigo-600 font-black text-lg">{d.total.toLocaleString()} ₮</p>
-                          <p className="text-xs text-gray-500 mt-1">{d.count} requests</p>
+                        <div className="bg-white p-4 border border-gray-100 shadow-lg rounded-3xl">
+                          <p className="font-black text-gray-800 mb-1 tracking-tight">Urgency: {d.urgency}</p>
+                          <p className="text-rose-500 font-black text-xl">{d.total.toLocaleString()} ₮</p>
+                          <p className="text-[10px] font-bold tracking-widest uppercase text-gray-500 mt-2">{d.count} requests</p>
                         </div>
                       );
                     }
                     return null;
                   }}
                 />
-                <Bar dataKey="total" fill="#f43f5e" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="total" fill="url(#roseGradient)" radius={[12, 12, 0, 0]} />
+                <defs>
+                   <linearGradient id="roseGradient" x1="0" y1="0" x2="0" y2="1">
+                     <stop offset="5%" stopColor="#fb7185" stopOpacity={0.8}/>
+                     <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.8}/>
+                   </linearGradient>
+                </defs>
               </BarChart>
             </ResponsiveContainer>
           </div>

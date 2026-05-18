@@ -51,6 +51,7 @@ export default function App() {
       <Route path="/admin" element={user?.role === 'Admin' ? <AdminLayout /> : <Navigate to="/" />}>
         <Route index element={<AdminDashboard />} />
         <Route path="analytics" element={<AdminAnalytics />} />
+        <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<UserProfile />} />
         <Route path="wishlist" element={<AdminWishlist />} />
         <Route path="date-ideas" element={<AdminDateIdeas />} />

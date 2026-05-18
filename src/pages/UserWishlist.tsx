@@ -7,6 +7,7 @@ import { Gift, Search, Plus, X, Tag, Star, ChevronDown, Check, EyeOff, Crown, Co
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { format } from 'date-fns';
+import { MessageHelperModal } from '../components/MessageHelperModal';
 
 const CATEGORIES = ['Gift', 'Food', 'Date', 'Shopping', 'Beauty', 'Experience', 'Other'] as const;
 const PRIORITIES = ['Low', 'Medium', 'High', 'Dream'] as const;
@@ -19,7 +20,7 @@ export default function UserWishlist() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
-  const [showCopyMessage, setShowCopyMessage] = useState(false);
+  const [smsModal, setSmsModal] = useState({ open: false, message: '', recipient: 'admin' as 'admin' | 'gunj' });
 
   const [formData, setFormData] = useState({
     title: '',
@@ -131,17 +132,11 @@ export default function UserWishlist() {
         created_at: Date.now()
       });
 
-      setShowCopyMessage(true);
+      setSmsModal({ open: true, message: `Minii wishlist haraachee claim hiilee, love ya 💖`, recipient: 'admin' });
       fetchData();
     } catch (err) {
       console.error(err);
     }
-  };
-
-  const copyMessage = () => {
-    navigator.clipboard.writeText("Minii wishlist haraachee claim hiilee, love ya 💖");
-    alert("Message copied 💖\nPlease send this message to Rih so he can review your claimed wishlist item.");
-    setShowCopyMessage(false);
   };
 
   const openEdit = (item: WishlistItem) => {
@@ -174,9 +169,9 @@ export default function UserWishlist() {
   }, [items, statusFilter, categoryFilter, priorityFilter]);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-10">
+    <div className="space-y-6 max-w-5xl mx-auto pb-[calc(80px+env(safe-area-inset-bottom))]">
       <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 shadow-sm border border-indigo-100 flex flex-col sm:flex-row justify-between items-start sm:items-center relative overflow-hidden gap-6">
-        <div className="absolute top-0 right-0 opacity-10 -mr-6 -mt-6">
+        <div className="absolute top-0 right-0 opacity-10 -mr-6 -mt-6 pointer-events-none">
           <Gift size={120} />
         </div>
         <div className="z-10 w-full flex flex-col sm:flex-row justify-between items-center sm:items-start">
@@ -226,27 +221,6 @@ export default function UserWishlist() {
           {PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
       </div>
-
-      {showCopyMessage && (
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-pink-50 border border-pink-200 p-6 rounded-[2rem] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm"
-        >
-          <div className="flex items-center gap-4 text-pink-700 font-medium text-sm">
-            <div className="bg-pink-100 p-3 rounded-full text-pink-500 flex-shrink-0">
-              <Heart className="h-6 w-6 fill-pink-500" />
-            </div>
-            <p>Yay! You claimed it. Please send this message to Rih so he can review your claimed wishlist item.</p>
-          </div>
-          <button 
-            onClick={copyMessage}
-            className="w-full sm:w-auto bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 flex-shrink-0"
-          >
-            <Copy className="h-4 w-4" /> Copy message
-          </button>
-        </motion.div>
-      )}
 
       {loading ? (
         <div className="p-10 flex justify-center"><div className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full" /></div>
@@ -336,12 +310,8 @@ export default function UserWishlist() {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
-          <motion.div 
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="bg-white rounded-[2rem] shadow-xl w-full max-w-md overflow-hidden"
-          >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm shadow-2xl">
+          <div className="bg-white rounded-[2rem] shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <Gift className="h-5 w-5 text-indigo-500" />
@@ -354,22 +324,22 @@ export default function UserWishlist() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Title</label>
-                <input disabled={editingItem?.status !== 'Wanted'} required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-medium text-gray-800 disabled:opacity-60 disabled:bg-gray-50" placeholder="e.g. New Shoes" />
+                <input disabled={!!editingItem && editingItem.status !== 'Wanted'} required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-medium text-gray-800 disabled:opacity-60 disabled:bg-gray-50" placeholder="e.g. New Shoes" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Description (Optional)</label>
-                <textarea disabled={editingItem?.status !== 'Wanted'} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={3} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none text-sm font-medium text-gray-800 disabled:opacity-60 disabled:bg-gray-50" placeholder="Link, size, color..." />
+                <textarea disabled={!!editingItem && editingItem.status !== 'Wanted'} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={3} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none text-sm font-medium text-gray-800 disabled:opacity-60 disabled:bg-gray-50" placeholder="Link, size, color..." />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Category</label>
-                  <select disabled={editingItem?.status !== 'Wanted'} value={formData.category} onChange={e => setFormData({...formData, category: e.target.value as any})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700 disabled:opacity-60 disabled:bg-gray-50">
+                  <select disabled={!!editingItem && editingItem.status !== 'Wanted'} value={formData.category} onChange={e => setFormData({...formData, category: e.target.value as any})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700 disabled:opacity-60 disabled:bg-gray-50">
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Priority</label>
-                  <select disabled={editingItem?.status !== 'Wanted'} value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value as any})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700 disabled:opacity-60 disabled:bg-gray-50">
+                  <select disabled={!!editingItem && editingItem.status !== 'Wanted'} value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value as any})} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-semibold text-gray-700 disabled:opacity-60 disabled:bg-gray-50">
                     {PRIORITIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
@@ -382,9 +352,16 @@ export default function UserWishlist() {
                 </div>
               )}
             </form>
-          </motion.div>
+          </div>
         </div>
       )}
+
+      <MessageHelperModal 
+        isOpen={smsModal.open}
+        onClose={() => setSmsModal({ open: false, message: '', recipient: 'admin' })}
+        messageText={smsModal.message}
+        recipientId={smsModal.recipient}
+      />
     </div>
   );
 }

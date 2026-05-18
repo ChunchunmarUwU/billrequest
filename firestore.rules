@@ -13,6 +13,11 @@ service cloud.firestore {
       return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
 
+    match /cnt/{contactId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
     match /users/{userId} {
       allow read: if isAdmin() || (isSignedIn() && request.auth.uid == userId) || (isSignedIn() && resource.data.role == 'Admin');
       allow create: if false;

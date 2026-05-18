@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, BarChart3, Settings, LogOut, Briefcase, Gift, CalendarHeart, Target } from 'lucide-react';
+import { BookOpen, Sparkles, LogOut, Scroll, Gem, Map, LineChart, Bell, User } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -16,24 +16,30 @@ export default function AdminLayout() {
   };
 
   const navItems = [
-    { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-    { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
-    { name: 'Wishlist', path: '/admin/wishlist', icon: Gift },
-    { name: 'Quests', path: '/admin/quests', icon: Target },
-    { name: 'Dates', path: '/admin/date-ideas', icon: CalendarHeart },
-    { name: 'Profile', path: '/admin/profile', icon: Settings },
+    { name: 'Dashboard', path: '/admin', icon: BookOpen },
+    { name: 'Wishlist', path: '/admin/wishlist', icon: Gem },
+    { name: 'Quests', path: '/admin/quests', icon: Map },
+    { name: 'Analytics', path: '/admin/analytics', icon: LineChart },
+    { name: 'Date Ideas', path: '/admin/date-ideas', icon: Sparkles },
+    { name: 'Notifications', path: '/admin/notifications', icon: Bell },
+    { name: 'Profile', path: '/admin/profile', icon: User },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:grid md:grid-cols-[260px_1fr] pb-16 md:pb-0">
+    <div className="min-h-screen flex flex-col md:flex-row pb-16 md:pb-0 bg-gray-50 text-gray-900 font-sans">
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex flex-col bg-gray-900 border-r border-gray-800 h-screen sticky top-0 z-40 overflow-y-auto w-[260px]">
-        <div className="h-16 flex flex-shrink-0 items-center px-6 border-b border-gray-800">
-          <Briefcase className="h-6 w-6 text-indigo-400 mr-2" />
-          <span className="text-lg font-bold text-white tracking-tight">Admin Console</span>
+      <div className="hidden md:flex flex-col bg-white border-r border-gray-200 h-screen sticky top-0 z-40 overflow-y-auto w-[260px] shadow-sm">
+        <div className="h-20 flex flex-shrink-0 items-center px-8 border-b border-gray-100">
+          <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm border border-indigo-100">
+            <User className="h-5 w-5" />
+          </div>
+          <div className="ml-3">
+            <span className="text-xl font-black text-gray-800 tracking-tight block leading-none">Admin</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1.5 block">Dashboard</span>
+          </div>
         </div>
         
-        <nav className="flex-1 px-4 py-6 space-y-2">
+        <nav className="flex-1 px-5 py-8 space-y-2 relative">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -42,57 +48,67 @@ export default function AdminLayout() {
                 key={item.name}
                 to={item.path}
                 className={cn(
-                  "group flex items-center px-4 py-3 text-sm font-bold rounded-2xl transition-all",
+                  "group relative flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all overflow-hidden",
                   isActive 
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20" 
-                    : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                    ? "text-indigo-700 bg-indigo-50 shadow-sm border border-indigo-100" 
+                    : "text-gray-500 hover:text-indigo-600 hover:bg-gray-50"
                 )}
               >
-                <Icon className={cn("mr-3 h-5 w-5", isActive ? "text-indigo-200" : "text-gray-500 group-hover:text-gray-300")} />
+                {isActive && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-r-lg" />
+                )}
+                <Icon className={cn("mr-3 h-4 w-4 transition-colors", isActive ? "text-indigo-600" : "text-gray-400 group-hover:text-indigo-500")} />
                 {item.name}
               </Link>
             );
           })}
         </nav>
         
-        <div className="border-t border-gray-800 p-4">
+        <div className="p-6">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-400 hover:bg-gray-800 hover:text-white rounded-2xl transition-all"
+            className="flex w-full items-center px-4 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-100 hover:text-gray-800 rounded-xl transition-all group"
           >
-            <LogOut className="mr-3 h-5 w-5 text-gray-500" />
+            <LogOut className="mr-3 h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
             Logout
           </button>
         </div>
       </div>
       
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-screen md:min-h-0 min-w-0">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 md:static z-30">
+      <div className="flex-1 flex flex-col min-h-screen md:min-h-0 min-w-0 relative z-10 w-full md:w-auto">
+        <header className="h-16 border-b border-gray-200 flex items-center justify-between px-6 sm:px-10 sticky top-0 md:static z-30 bg-white/80 backdrop-blur-md">
           <div className="flex items-center flex-shrink-0">
-            <Briefcase className="h-6 w-6 text-indigo-600 mr-3 md:hidden" />
-            <h1 className="text-xl font-semibold text-gray-800">
-              {navItems.find(i => i.path === location.pathname)?.name || 'Admin'}
-            </h1>
+            <div className="md:hidden h-9 w-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm border border-indigo-100 mr-3">
+               <User className="h-4 w-4" />
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-gray-800 tracking-tight leading-none">
+                {navItems.find(i => i.path === location.pathname)?.name || 'Dashboard'}
+              </h1>
+            </div>
           </div>
-          <div className="flex items-center">
-            <span className="text-sm text-gray-500 hidden sm:inline">Logged in as <strong>Admin</strong></span>
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">System Online</span>
+            </div>
             <button
                onClick={handleLogout}
-               className="md:hidden ml-4 text-gray-500 hover:text-gray-700"
+               className="md:hidden h-9 w-9 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 shadow-sm border border-gray-200 transition-all"
             >
-              <LogOut className="h-5 w-5" />
+              <LogOut className="h-4 w-4" />
             </button>
           </div>
         </header>
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50/50 p-4 sm:p-8">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-8 lg:p-10 relative">
           <Outlet />
         </main>
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around items-center h-16 z-50 pb-safe overflow-x-auto scrollbar-hide px-2">
+      <nav className="md:hidden fixed bottom-6 left-4 right-4 bg-white/90 backdrop-blur-xl border border-gray-200 shadow-lg rounded-2xl flex justify-around items-center h-16 z-50 px-2 pb-safe-bottom">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -101,12 +117,15 @@ export default function AdminLayout() {
               key={item.name}
               to={item.path}
               className={cn(
-                "relative flex flex-col items-center justify-center min-w-[60px] h-full mx-1 flex-shrink-0",
-                isActive ? "text-indigo-400" : "text-gray-400 hover:text-white"
+                "relative flex flex-col items-center justify-center min-w-[50px] h-full mx-0.5 flex-shrink-0 transition-all",
+                isActive ? "text-indigo-600 translate-y-[-2px]" : "text-gray-400 hover:text-gray-600"
               )}
             >
-              <Icon className="h-5 w-5 mb-1" />
-              <span className="text-[9px] font-medium leading-tight whitespace-nowrap text-center">{item.name}</span>
+              {isActive && (
+                <div className="absolute -top-3 w-4 h-[3px] bg-indigo-500 rounded-full" />
+              )}
+              <Icon className={cn("h-4 w-4 mb-1 transition-all", isActive && "drop-shadow-sm")} />
+              <span className="text-[9px] font-bold leading-tight whitespace-nowrap text-center">{item.name}</span>
             </Link>
           );
         })}

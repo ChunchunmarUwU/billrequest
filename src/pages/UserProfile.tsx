@@ -106,8 +106,8 @@ export default function UserProfile() {
       <motion.div 
         whileHover={!isAdmin ? { scale: 1.01 } : {}}
         className={cn(
-          "rounded-[3rem] shadow-sm border overflow-hidden relative",
-          isAdmin ? "bg-white border-gray-200" : "bg-gradient-to-tr from-pink-100 via-purple-50 to-indigo-100 border-white/50 backdrop-blur-xl"
+          "rounded-[3rem] shadow-[0_4px_20px_rgba(120,113,108,0.04)] border overflow-hidden relative",
+          isAdmin ? "bg-white border-gray-100" : "bg-gradient-to-tr from-pink-100 via-purple-50 to-indigo-100 border-white/50 backdrop-blur-xl"
         )}
       >
         {!isAdmin && (
@@ -118,14 +118,14 @@ export default function UserProfile() {
         <div className="p-8 sm:p-10 flex flex-col sm:flex-row items-center sm:items-start gap-8 relative z-10 text-center sm:text-left">
           <div className={cn(
             "h-24 w-24 rounded-full flex items-center justify-center font-black text-4xl shrink-0 shadow-sm overflow-hidden border-2",
-            isAdmin ? "bg-indigo-600 text-white border-white" : "bg-white text-pink-500 border-white backdrop-blur-md"
+            isAdmin ? "bg-indigo-50 text-indigo-600 border-indigo-100" : "bg-white text-pink-500 border-white backdrop-blur-md"
           )}>
             {user?.username.charAt(0).toUpperCase() || 'U'}
           </div>
           <div className="flex-1 flex flex-col justify-center h-full pt-2 w-full">
             <h2 className={cn(
               "text-3xl font-black tracking-tight flex items-center justify-center sm:justify-start gap-3",
-              isAdmin ? "text-gray-900" : "text-gray-800"
+              isAdmin ? "font-black text-gray-800" : "text-gray-800"
             )}>
               {user?.username} {!isAdmin && <Sparkles className="h-6 w-6 text-pink-400" />}
             </h2>
@@ -133,7 +133,7 @@ export default function UserProfile() {
             <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6 text-sm font-bold w-full">
               <span className={cn(
                 "flex items-center gap-1.5 uppercase tracking-widest",
-                isAdmin ? "text-gray-500" : "text-indigo-400"
+                isAdmin ? "text-gray-500 font-bold" : "text-indigo-400"
               )}>
                  User Account
               </span>
@@ -143,7 +143,7 @@ export default function UserProfile() {
               </span>
             </div>
             {auth.currentUser?.metadata.creationTime && (
-               <div className={cn("mt-4 text-xs font-semibold uppercase tracking-widest", isAdmin ? "text-gray-400" : "text-indigo-400/80")}>
+               <div className={cn("mt-4 text-xs uppercase tracking-widest", isAdmin ? "text-gray-400 font-bold" : "text-indigo-400/80 font-semibold")}>
                   Joined {new Date(auth.currentUser.metadata.creationTime).toLocaleDateString()}
                </div>
             )}
@@ -154,31 +154,31 @@ export default function UserProfile() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
          {/* Password Change */}
          <div className={cn(
-         "rounded-[3rem] shadow-sm border overflow-hidden backdrop-blur-xl h-fit",
-         isAdmin ? "bg-white border-gray-200" : "bg-white/80 border-pink-100"
+         "rounded-[3rem] shadow-[0_4px_20px_rgba(120,113,108,0.04)] border overflow-hidden backdrop-blur-xl h-fit",
+         isAdmin ? "bg-white/70 border-amber-900/10" : "bg-white/80 border-pink-100"
          )}>
             <div className={cn(
                "px-8 py-6 border-b flex items-center gap-3",
                isAdmin ? "border-gray-100" : "border-pink-50 bg-white/50"
             )}>
-               <KeyRound className={cn("h-5 w-5", isAdmin ? "text-gray-500" : "text-pink-400")} />
-               <h3 className={cn("text-lg font-bold tracking-tight", isAdmin ? "text-gray-900" : "text-gray-800")}>Change Password</h3>
+               <KeyRound className={cn("h-5 w-5", isAdmin ? "text-indigo-500" : "text-pink-400")} />
+               <h3 className={cn("text-lg tracking-tight", isAdmin ? "font-black text-gray-800" : "font-bold text-gray-800")}>Change Password</h3>
             </div>
             
             <form onSubmit={handlePasswordSubmit} className="p-8 space-y-6">
                {message && (
-               <div className="rounded-2xl bg-green-50 p-4 text-sm font-bold text-green-700 border border-green-200 shadow-sm">
+               <div className={cn("rounded-2xl p-4 text-sm font-bold shadow-sm border", isAdmin ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-green-50 text-green-700 border-green-200")}>
                   {message}
                </div>
                )}
                {error && (
-               <div className="rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-700 border border-red-200 shadow-sm">
+               <div className={cn("rounded-2xl p-4 text-sm font-bold shadow-sm border", isAdmin ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-red-50 text-red-700 border-red-200")}>
                   {error}
                </div>
                )}
 
                <div className="group">
-               <label className={cn("block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 transition-colors", !isAdmin && "group-focus-within:text-pink-500")}>Current Password</label>
+               <label className={cn("block text-[10px] font-bold uppercase tracking-widest mb-2 transition-colors", isAdmin ? "text-gray-400" : "text-gray-400", !isAdmin && "group-focus-within:text-pink-500")}>Current Password</label>
                <motion.input
                   whileFocus={{ scale: 1.02 }}
                   type="password"
@@ -186,14 +186,14 @@ export default function UserProfile() {
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className={cn(
-                     "block w-full rounded-2xl border-0 bg-gray-50 px-5 py-4 font-bold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 focus:bg-white focus:ring-2 focus:ring-inset transition-all",
-                     isAdmin ? "focus:ring-indigo-500" : "focus:ring-pink-400"
+                     "block w-full rounded-2xl border-0 px-5 py-4 font-bold shadow-sm ring-1 ring-inset ring-gray-200 focus:bg-white focus:ring-2 focus:ring-inset transition-all",
+                     isAdmin ? "bg-white/50 text-stone-800 focus:ring-teal-500" : "bg-gray-50 text-gray-900 focus:ring-pink-400"
                   )}
                />
                </div>
 
                <div className="group">
-               <label className={cn("block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 transition-colors", !isAdmin && "group-focus-within:text-pink-500")}>New Password</label>
+               <label className={cn("block text-[10px] font-bold uppercase tracking-widest mb-2 transition-colors", isAdmin ? "text-gray-400" : "text-gray-400", !isAdmin && "group-focus-within:text-pink-500")}>New Password</label>
                <motion.input
                   whileFocus={{ scale: 1.02 }}
                   type="password"
@@ -201,14 +201,14 @@ export default function UserProfile() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className={cn(
-                     "block w-full rounded-2xl border-0 bg-gray-50 px-5 py-4 font-bold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 focus:bg-white focus:ring-2 focus:ring-inset transition-all",
-                     isAdmin ? "focus:ring-indigo-500" : "focus:ring-pink-400"
+                     "block w-full rounded-2xl border-0 px-5 py-4 font-bold shadow-sm ring-1 ring-inset ring-gray-200 focus:bg-white focus:ring-2 focus:ring-inset transition-all",
+                     isAdmin ? "bg-white/50 text-stone-800 focus:ring-teal-500" : "bg-gray-50 text-gray-900 focus:ring-pink-400"
                   )}
                />
                </div>
 
                <div className="group">
-               <label className={cn("block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 transition-colors", !isAdmin && "group-focus-within:text-pink-500")}>Confirm New Password</label>
+               <label className={cn("block text-[10px] font-bold uppercase tracking-widest mb-2 transition-colors", isAdmin ? "text-gray-400" : "text-gray-400", !isAdmin && "group-focus-within:text-pink-500")}>Confirm New Password</label>
                <motion.input
                   whileFocus={{ scale: 1.02 }}
                   type="password"
@@ -216,8 +216,8 @@ export default function UserProfile() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className={cn(
-                     "block w-full rounded-2xl border-0 bg-gray-50 px-5 py-4 font-bold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 focus:bg-white focus:ring-2 focus:ring-inset transition-all",
-                     isAdmin ? "focus:ring-indigo-500" : "focus:ring-pink-400"
+                     "block w-full rounded-2xl border-0 px-5 py-4 font-bold shadow-sm ring-1 ring-inset ring-gray-200 focus:bg-white focus:ring-2 focus:ring-inset transition-all",
+                     isAdmin ? "bg-white/50 text-stone-800 focus:ring-teal-500" : "bg-gray-50 text-gray-900 focus:ring-pink-400"
                   )}
                />
                </div>
@@ -229,8 +229,8 @@ export default function UserProfile() {
                   type="submit"
                   disabled={loading}
                   className={cn(
-                     "w-full flex justify-center rounded-2xl px-6 py-4 text-base font-black text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 transition-all",
-                     isAdmin ? "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 hover:shadow-xl" : "bg-gradient-to-r from-pink-500 to-indigo-500 hover:opacity-90 focus:ring-pink-400 hover:shadow-xl hover:-translate-y-0.5"
+                     "w-full flex justify-center rounded-2xl px-6 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-[0_8px_20px_rgba(120,113,108,0.15)] focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 transition-all",
+                     isAdmin ? "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 hover:-translate-y-0.5" : "bg-gradient-to-r from-pink-500 to-indigo-500 hover:opacity-90 focus:ring-pink-400 hover:shadow-xl hover:-translate-y-0.5"
                   )}
                >
                   {loading ? 'Updating...' : 'Update Password'}
@@ -241,25 +241,25 @@ export default function UserProfile() {
 
          <div className="space-y-8 h-fit">
             {isAdmin && (
-               <div className="rounded-[3rem] shadow-sm border overflow-hidden bg-white border-gray-200">
+               <div className="rounded-[3rem] shadow-sm border overflow-hidden bg-white border-gray-100">
                <div className="px-8 py-6 border-b border-gray-100 flex items-center gap-3">
                   <Activity className="h-5 w-5 text-indigo-500" />
-                  <h3 className="text-lg font-bold tracking-tight text-gray-900">Financial State</h3>
+                  <h3 className="text-lg font-black tracking-tight text-gray-800">Financial State</h3>
                </div>
                <div className="p-8 space-y-6">
-                  <p className="text-sm text-gray-500 font-medium">Set your current financial state to let users know before they request money.</p>
+                  <p className="text-sm text-gray-500 font-bold">Set your current financial state to let users know before they request money.</p>
                   <div className="grid gap-4">
                      {[
-                     { val: 'GOOD', color: 'bg-green-100 text-green-700 hover:bg-green-200 border-green-200', active: 'ring-2 ring-green-500 ring-offset-2' },
-                     { val: 'Okay', color: 'bg-orange-100 text-orange-700 hover:bg-orange-200 border-orange-200', active: 'ring-2 ring-orange-500 ring-offset-2' },
-                     { val: 'Bad', color: 'bg-red-100 text-red-700 hover:bg-red-200 border-red-200', active: 'ring-2 ring-red-500 ring-offset-2' }
+                     { val: 'GOOD', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200', active: 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-white' },
+                     { val: 'Okay', color: 'bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-200', active: 'ring-2 ring-amber-400 ring-offset-2 ring-offset-white' },
+                     { val: 'Bad', color: 'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200', active: 'ring-2 ring-rose-400 ring-offset-2 ring-offset-white' }
                      ].map(s => (
                      <button
                         key={s.val}
                         onClick={() => handleFinancialStateChange(s.val)}
                         disabled={savingFinancialState}
                         className={cn(
-                           "w-full rounded-2xl px-6 py-4 font-black uppercase tracking-widest text-sm transition-all border",
+                           "w-full rounded-2xl px-6 py-4 font-bold uppercase tracking-widest text-sm transition-all border shadow-sm",
                            s.color,
                            financialState === s.val ? s.active : "opacity-60"
                         )}
@@ -273,15 +273,15 @@ export default function UserProfile() {
             )}
 
             <div className={cn(
-               "rounded-[3rem] shadow-sm border overflow-hidden backdrop-blur-xl",
-               isAdmin ? "bg-white border-gray-200" : "bg-white/80 border-pink-100"
+               "rounded-[3rem] shadow-[0_4px_20px_rgba(120,113,108,0.04)] border overflow-hidden backdrop-blur-xl",
+               isAdmin ? "bg-white border-gray-100" : "bg-white/80 border-pink-100"
             )}>
                <div className="p-8">
                   <button
                      onClick={handleLogout}
                      className={cn(
-                        "w-full flex items-center justify-center gap-3 rounded-2xl px-6 py-4 font-black uppercase tracking-widest text-sm transition-all border shadow-sm",
-                        isAdmin ? "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100" : "bg-white text-gray-700 border-pink-100 hover:bg-pink-50/50"
+                        "w-full flex items-center justify-center gap-3 rounded-2xl px-6 py-4 font-bold uppercase tracking-widest text-sm transition-all border shadow-sm",
+                        isAdmin ? "bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100" : "bg-white text-gray-700 border-pink-100 hover:bg-pink-50/50"
                      )}
                   >
                      <LogOut className="h-5 w-5" /> Logout

@@ -22,6 +22,7 @@ export interface Notification {
   id: string;
   user_id: string;
   request_id?: string;
+  questId?: string;
   message: string;
   type?: string;
   title?: string;
@@ -77,6 +78,7 @@ export interface Quest {
   createdBy: string;
   proofText?: string;
   adminComment?: string;
+  dueDate?: number;
   createdAt: number;
   updatedAt: number;
   submittedAt?: number;

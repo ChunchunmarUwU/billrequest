@@ -2,11 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Quest, PrincessPoints, PointHistory } from '../types';
 import { db } from '../lib/firebase';
-import { collection, query, where, orderBy, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, doc, updateDoc, getDoc, addDoc } from 'firebase/firestore';
 import { Target, Crown, History, Gift, Check, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import { format } from 'date-fns';
+import { format, isPast, isToday, isTomorrow } from 'date-fns';
+import { MessageHelperModal } from '../components/MessageHelperModal';
 
 export default function UserQuests() {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ export default function UserQuests() {
   
   const [submitModal, setSubmitModal] = useState<{ open: boolean; quest: Quest | null }>({ open: false, quest: null });
   const [proofText, setProofText] = useState('');
+  const [smsModal, setSmsModal] = useState({ open: false, message: '', recipient: 'admin' as 'admin' | 'gunj' });
 
   useEffect(() => {
     if (!user) return;
@@ -64,17 +66,45 @@ export default function UserQuests() {
         submittedAt: Date.now(),
         updatedAt: Date.now()
       });
+
+      // Notification
+      await addDoc(collection(db, 'notifications'), {
+        user_id: submitModal.quest.createdBy,
+        type: 'QUEST_SUBMITTED',
+        title: 'Quest submitted',
+        message: `${user.username || 'Gunj'} submitted a quest for review: ${submitModal.quest.title}`,
+        questId: submitModal.quest.id,
+        is_read: false,
+        created_at: Date.now()
+      });
+
       setSubmitModal({ open: false, quest: null });
       setProofText('');
       fetchData();
+      setSmsModal({ open: true, message: `Questee hiigeed submit hiilee, shalgaad uguuch 💖`, recipient: 'admin' });
     } catch (err) {
       console.error(err);
     }
   };
 
   const filteredQuests = useMemo(() => {
-    if (statusFilter === 'All') return quests;
-    return quests.filter(q => q.status === statusFilter);
+    let list = quests;
+    if (statusFilter !== 'All') {
+      list = quests.filter(q => q.status === statusFilter);
+    }
+    
+    // Sort logic for Active quests
+    // We want active quests with nearest due date first
+    list.sort((a, b) => {
+      if (a.status === 'Active' && b.status === 'Active') {
+        const dateA = a.dueDate ? a.dueDate : Number.MAX_SAFE_INTEGER;
+        const dateB = b.dueDate ? b.dueDate : Number.MAX_SAFE_INTEGER;
+        return dateA - dateB;
+      }
+      return 0; // Maintain original order initially (desc by createdAt)
+    });
+
+    return list;
   }, [quests, statusFilter]);
 
   const getDifficultyColor = (diff: string) => {
@@ -201,7 +231,23 @@ export default function UserQuests() {
                        </div>
                      </div>
                      
-                     <h3 className="text-lg font-bold text-gray-800 leading-tight mb-2">{q.title}</h3>
+                     <h3 className="text-lg font-bold text-gray-800 leading-tight mb-1">{q.title}</h3>
+                     
+                     {q.dueDate && (
+                        <div className="mb-2">
+                          {q.status === 'Active' && isPast(new Date(q.dueDate)) && !isToday(new Date(q.dueDate)) ? (
+                             <span className="inline-block px-2 py-0.5 rounded flex items-center bg-red-100 text-red-700 text-xs font-bold border border-red-200">Overdue: {format(new Date(q.dueDate), 'MMM d')}</span>
+                          ) : q.status === 'Active' && isToday(new Date(q.dueDate)) ? (
+                             <span className="inline-block px-2 py-0.5 rounded flex items-center bg-pink-100 text-pink-700 text-xs font-bold border border-pink-200">Due today 💖</span>
+                          ) : q.status === 'Active' && isTomorrow(new Date(q.dueDate)) ? (
+                             <span className="inline-block px-2 py-0.5 rounded flex items-center bg-blue-100 text-blue-700 text-xs font-bold border border-blue-200">Due tomorrow</span>
+                          ) : (
+                             <span className="text-xs font-bold text-gray-500">Due: {format(new Date(q.dueDate), 'MMM d, yyyy')}</span>
+                          )}
+                        </div>
+                     )}
+                     {!q.dueDate && <span className="text-xs font-bold text-gray-400 mb-2 block">No due date</span>}
+
                      <p className="text-sm text-gray-500 mb-4">{q.description}</p>
                      
                      {q.status === 'Rejected' && q.adminComment && (
@@ -315,6 +361,12 @@ export default function UserQuests() {
         </div>
       )}
 
+      <MessageHelperModal 
+        isOpen={smsModal.open}
+        onClose={() => setSmsModal({ open: false, message: '', recipient: 'admin' })}
+        messageText={smsModal.message}
+        recipientId={smsModal.recipient}
+      />
     </div>
   );
 }
